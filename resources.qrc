@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/qml">
+        <file alias="main.qml">qml/slots/main.qml</file>
+        <file alias="SlotItem.qml">qml/slots/SlotItem.qml</file>
+        <file alias="StartMenu.qml">qml/slots/StartMenu.qml</file>
+        <file alias="MyButton.qml">qml/slots/MyButton.qml</file>
+    </qresource>
+</RCC>

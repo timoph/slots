@@ -9,12 +9,22 @@ Rectangle {
     color: "#020202"
     border.color: "#efefef"
     border.width: 0
+    smooth: true
+
+    Image {
+        id: image
+        source: "image://images/" + value
+        anchors.fill: parent
+        smooth: true
+    }
+
     Text {
         id: txt
         color: parent.itemcolor
         text: parent.value
         font.pixelSize: 48
         anchors.centerIn: parent
+        opacity: 50
 
         Behavior on color {
             ColorAnimation { duration: 200 }

@@ -235,7 +235,6 @@ Rectangle {
             anchors.fill: parent
             enabled: engine.playable
             onClicked: {
-                //Qt.quit();
                 engine.spin()
             }
         }

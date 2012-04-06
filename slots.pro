@@ -4,9 +4,11 @@ TARGET = slots
 QT += core gui declarative
 
 SOURCES += main.cpp \
-    gameengine.cpp
+    gameengine.cpp \
+    imageprovider.cpp
 HEADERS += \
-    gameengine.h
+    gameengine.h \
+    imageprovider.h
 
 OTHER_FILES += \
     qml/slots/main.qml \

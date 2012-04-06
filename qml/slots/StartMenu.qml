@@ -51,10 +51,10 @@ Rectangle {
             id: aboutButton
             width: 120
             height: 40
-            label: "Help"
+            label: "About"
 
             onMyButtonClicked: {
-                //
+                aboutRect.opacity = 100
             }
         }
     }
@@ -67,5 +67,38 @@ Rectangle {
         color: "#dedede"
         horizontalAlignment: Text.AlignHCenter
         text: "(c) 2012 - Timo Härkönen\ntimop.harkonen@gmail.com"
+    }
+
+    Rectangle {
+        id: aboutRect
+        anchors.fill: parent
+        color: "#020202"
+        opacity: 0
+
+        Behavior on opacity {
+            NumberAnimation { duration: 800 }
+        }
+
+        TextEdit {
+            id: aboutText
+            enabled: false
+            text: "TODO"
+            color: "#dedede"
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        MyButton {
+            id: closeAboutButton
+            width: 120
+            height: 40
+            label: "ok"
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: aboutText.bottom
+            anchors.topMargin: 20
+
+            onMyButtonClicked: {
+                aboutRect.opacity = 0
+            }
+        }
     }
 }

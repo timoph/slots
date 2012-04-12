@@ -7,36 +7,39 @@ ImageProvider::ImageProvider() :
 
 QPixmap ImageProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
 {
-    int width = 50;
-    int height = 50;
+    Q_UNUSED(requestedSize)
+    Q_UNUSED(size)
+//    int width = 50;
+//    int height = 50;
 
-    QString fillColor = "black";
+//    if (size)
+//        *size = QSize(width, height);
+    //QPixmap pixmap(requestedSize.width() > 0 ? requestedSize.width() : width,
+    //               requestedSize.height() > 0 ? requestedSize.height() : height);
+
 
     switch(id.toInt()) {
+    case 0:
+        return QPixmap(":/images/stone1.jpg");
+        break;
     case 1:
-        fillColor = "red";
+        return QPixmap(":/images/axe1.jpg");
         break;
     case 2:
-        fillColor = "blue";
+        return QPixmap(":/images/saw1.jpg");
         break;
     case 3:
-        fillColor = "green";
+        return QPixmap(":/images/hammer1.jpg");
         break;
     case 4:
-        fillColor = "yellow";
+        return QPixmap(":/images/spade1.jpg");
         break;
     case 5:
-        fillColor = "cyan";
+        return QPixmap(":/images/coins3.jpg");
         break;
     default:
         break;
     }
 
-    if (size)
-        *size = QSize(width, height);
-    QPixmap pixmap(requestedSize.width() > 0 ? requestedSize.width() : width,
-                   requestedSize.height() > 0 ? requestedSize.height() : height);
-    //pixmap.fill(QColor(id).rgba());
-    pixmap.fill(QColor(fillColor).rgba());
-    return pixmap;
+    return QPixmap();
 }

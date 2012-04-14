@@ -125,77 +125,62 @@ Rectangle {
         anchors.bottomMargin: 30
         color: "#020202"
 
-        // 1st row
-        SlotItem {
-            id: r0c0
-        }
-        SlotItem {
-            id: r0c1
-            anchors.left: r0c0.right
-        }
-        SlotItem {
-            id: r0c2
-            anchors.left: r0c1.right
-        }
-        SlotItem {
-            id: r0c3
-            anchors.left: r0c2.right
-        }
-        SlotItem {
-            id: r0c4
-            anchors.left: r0c3.right
-        }
+        Grid {
+            id: slotGrid
+            columns: 5
+            rows: 3
+            spacing: 3
 
-        // second row
-        SlotItem {
-            id: r1c0
-            anchors.top: r0c0.bottom
-        }
-        SlotItem {
-            id: r1c1
-            anchors.left: r1c0.right
-            anchors.top: r0c0.bottom
-        }
-        SlotItem {
-            id: r1c2
-            anchors.left: r1c1.right
-            anchors.top: r0c0.bottom
-        }
-        SlotItem {
-            id: r1c3
-            anchors.left: r1c2.right
-            anchors.top: r0c0.bottom
-        }
-        SlotItem {
-            id: r1c4
-            anchors.left: r1c3.right
-            anchors.top: r0c0.bottom
-        }
+            // 1st row
+            SlotItem {
+                id: r0c0
+            }
+            SlotItem {
+                id: r0c1
+            }
+            SlotItem {
+                id: r0c2
+            }
+            SlotItem {
+                id: r0c3
+            }
+            SlotItem {
+                id: r0c4
+            }
 
-        // 3rd row
-        SlotItem {
-            id: r2c0
-            anchors.top: r1c0.bottom
-        }
-        SlotItem {
-            id: r2c1
-            anchors.left: r2c0.right
-            anchors.top: r1c0.bottom
-        }
-        SlotItem {
-            id: r2c2
-            anchors.left: r2c1.right
-            anchors.top: r1c0.bottom
-        }
-        SlotItem {
-            id: r2c3
-            anchors.left: r2c2.right
-            anchors.top: r1c0.bottom
-        }
-        SlotItem {
-            id: r2c4
-            anchors.left: r2c3.right
-            anchors.top: r1c0.bottom
+            // second row
+            SlotItem {
+                id: r1c0
+            }
+            SlotItem {
+                id: r1c1
+            }
+            SlotItem {
+                id: r1c2
+            }
+            SlotItem {
+                id: r1c3
+            }
+            SlotItem {
+                id: r1c4
+            }
+
+            // 3rd row
+            SlotItem {
+                id: r2c0
+            }
+            SlotItem {
+                id: r2c1
+            }
+            SlotItem {
+                id: r2c2
+            }
+            SlotItem {
+                id: r2c3
+            }
+            SlotItem {
+                id: r2c4
+            }
         }
     }
 
@@ -204,14 +189,14 @@ Rectangle {
         text: "Total bet: " + engine.bet * engine.lines
         color: "#dedede"
         anchors.bottom: spinButton.top
-        anchors.bottomMargin: 15
+        anchors.bottomMargin: 5
         anchors.horizontalCenter: spinButton.horizontalCenter
     }
 
     Rectangle {
         id: spinButton
-        width: 60
-        height: 60
+        width: 50
+        height: 50
         radius: 45
         smooth: true
         color: engine.playable ? "#02de02" : "#024502"

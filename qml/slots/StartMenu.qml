@@ -43,6 +43,9 @@ Rectangle {
             onMyButtonClicked: {
                 base.gameOnGoing = true
                 engine.credits = 100
+                engine.message = ""
+                engine.lines = 9
+                engine.bet = 1
                 startGame()
             }
         }

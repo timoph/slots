@@ -178,12 +178,6 @@ void GameEngine::setMessage(const QString &msg)
 
 void GameEngine::checkLines()
 {
-    /* this crashes - not anymore
-    " 5  1  3  3  3
-     2  2  2  2  5
-     0  5  2  2  6
-    "
-    */
     qDebug() << __PRETTY_FUNCTION__;
     // 1st row
     /* winning lines

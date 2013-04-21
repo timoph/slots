@@ -1,7 +1,11 @@
 #include "imageprovider.h"
 
 ImageProvider::ImageProvider() :
+#ifndef QT5BUILD
     QDeclarativeImageProvider(QDeclarativeImageProvider::Pixmap)
+#else
+    QQuickImageProvider(QQuickImageProvider::Pixmap)
+#endif
 {
 }
 

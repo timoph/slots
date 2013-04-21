@@ -1,7 +1,16 @@
 TEMPLATE = app
 TARGET = slots
 
-QT += core gui declarative
+contains(QT_VERSION, ^4.*) {
+    QT += core gui declarative
+    message("building for Qt4")
+}
+
+contains(QT_VERSION, ^5.*) {
+    QT += core widgets quick
+    DEFINES += QT5BUILD
+    message("building for Qt5")
+}
 
 SOURCES += main.cpp \
     gameengine.cpp \

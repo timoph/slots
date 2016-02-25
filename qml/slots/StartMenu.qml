@@ -1,5 +1,6 @@
 // import QtQuick 1.0 // to target S60 5th Edition or Maemo 5
-import QtQuick 1.1
+//import QtQuick 1.1
+import QtQuick 2.3
 
 Rectangle {
     id: base
@@ -60,16 +61,6 @@ Rectangle {
                 aboutRect.opacity = 100
             }
         }
-    }
-
-    Text {
-        id: copyText
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 20
-        width: parent.width
-        color: "#dedede"
-        horizontalAlignment: Text.AlignHCenter
-        text: "(c) 2012 - Timo Härkönen\ntimop.harkonen@gmail.com"
     }
 
     Rectangle {

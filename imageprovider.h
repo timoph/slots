@@ -1,12 +1,13 @@
 #ifndef IMAGEPROVIDER_H
 #define IMAGEPROVIDER_H
 
-#ifndef QT5BUILD
-#include <QDeclarativeImageProvider>
-class ImageProvider : public QDeclarativeImageProvider
-#else
+
+#ifdef QT5BUILD
 #include <QQuickImageProvider>
 class ImageProvider : public QQuickImageProvider
+#else
+#include <QDeclarativeImageProvider>
+class ImageProvider : public QDeclarativeImageProvider
 #endif
 {
 public:

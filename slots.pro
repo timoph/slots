@@ -12,6 +12,10 @@ else {
     RESOURCES += resources.qrc
 }
 
+macx {
+	CONFIG -= app_bundle
+}
+
 SOURCES += main.cpp \
     gameengine.cpp \
     imageprovider.cpp

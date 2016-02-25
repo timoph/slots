@@ -1,15 +1,15 @@
 TEMPLATE = app
 TARGET = slots
+DESTDIR = bin
 
-contains(QT_VERSION, ^4.*) {
-    QT += core gui declarative
-    message("building for Qt4")
-}
-
-contains(QT_VERSION, ^5.*) {
-    QT += core widgets quick
+greaterThan(QT_MAJOR_VERSION, 4) {
+    QT += widgets core qml quick
     DEFINES += QT5BUILD
-    message("building for Qt5")
+    RESOURCES += resources_qt5.qrc
+}
+else {
+    QT += core gui declarative
+    RESOURCES += resources.qrc
 }
 
 SOURCES += main.cpp \
@@ -26,4 +26,6 @@ OTHER_FILES += \
     qml/slots/MyButton.qml
 
 RESOURCES += \
-    resources.qrc
+    images.qrc
+
+

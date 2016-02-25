@@ -5,12 +5,4 @@
         <file alias="StartMenu.qml">qml/slots/StartMenu.qml</file>
         <file alias="MyButton.qml">qml/slots/MyButton.qml</file>
     </qresource>
-    <qresource prefix="/images">
-        <file alias="axe1.jpg">icons/axe1.jpg</file>
-        <file alias="coins3.jpg">icons/coins3.jpg</file>
-        <file alias="hammer1.jpg">icons/hammer1.jpg</file>
-        <file alias="saw1.jpg">icons/saw1.jpg</file>
-        <file alias="spade1.jpg">icons/spade1.jpg</file>
-        <file alias="stone1.jpg">icons/stone1.jpg</file>
-    </qresource>
 </RCC>

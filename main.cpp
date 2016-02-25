@@ -1,11 +1,12 @@
 #include <QApplication>
-#ifndef QT5BUILD
+#ifdef QT5BUILD
+#include <QQmlEngine>
+#include <QQmlContext>
+#include <QQuickView>
+#else
 #include <QtDeclarative/QDeclarativeView>
 #include <QtDeclarative/QDeclarativeContext>
 #include <QtDeclarative/QDeclarativeEngine>
-#else
-#include <QQuickView>
-#include <QQmlContext>
 #endif
 #include <QUrl>
 
@@ -15,21 +16,18 @@
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
     QScopedPointer<QApplication> app(new QApplication(argc, argv));
-#ifndef QT5BUILD
-    QScopedPointer<QDeclarativeView> view(new QDeclarativeView);
-#else
+#ifdef QT5BUILD
     QScopedPointer<QQuickView> view(new QQuickView);
+    view->setResizeMode(QQuickView::SizeRootObjectToView);
+#else
+    QScopedPointer<QDeclarativeView> view(new QDeclarativeView);
+    view->setResizeMode(QDeclarativeView::SizeRootObjectToView);
 #endif
     QScopedPointer<GameEngine> engine(new GameEngine);
     view->engine()->addImageProvider(QLatin1String("images"), new ImageProvider);
     view->rootContext()->setContextProperty("engine", engine.data());
     view->setSource(QUrl("qrc:/qml/main.qml"));
-#ifndef QT5BUILD
-    view->setResizeMode(QDeclarativeView::SizeRootObjectToView);
-#else
-    view->setResizeMode(QQuickView::SizeRootObjectToView);
-#endif
-    view->show();
+    view->showFullScreen();
 
     QObject::connect(view->engine(), SIGNAL(quit()),
                      app.data(), SLOT(quit()));

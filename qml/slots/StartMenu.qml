@@ -61,6 +61,17 @@ Rectangle {
                 aboutRect.opacity = 100
             }
         }
+
+        MyButton {
+            id: exitButton
+            width: 120
+            height: 40
+            label: "Exit"
+
+            onMyButtonClicked: {
+                Qt.quit()
+            }
+        }
     }
 
     Rectangle {

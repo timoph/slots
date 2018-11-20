@@ -27,7 +27,9 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     view->engine()->addImageProvider(QLatin1String("images"), new ImageProvider);
     view->rootContext()->setContextProperty("engine", engine.data());
     view->setSource(QUrl("qrc:/qml/main.qml"));
-    view->showFullScreen();
+
+    //view->showFullScreen();
+    view->show();
 
     QObject::connect(view->engine(), SIGNAL(quit()),
                      app.data(), SLOT(quit()));

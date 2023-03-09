@@ -3,6 +3,9 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QTimer>
+#if QT_VERSION_MAJOR > 5
+#include <QRandomGenerator>
+#endif
 
 GameEngine::GameEngine(QObject *parent) :
     QObject(parent)
@@ -25,7 +28,9 @@ GameEngine::GameEngine(QObject *parent) :
     }
 
     populatePayTable();
+#if QT_VERSION_MAJOR < 6
     qsrand(QDateTime::currentMSecsSinceEpoch());
+#endif
 }
 
 int GameEngine::itemForPlace(const int row, const int column)
@@ -72,7 +77,11 @@ void GameEngine::shuffle()
         for(int i = 0; i < 3; i++) {
             QList<int> list;
             for(int j = 0; j < 5; j++) {
+#if QT_VERSION_MAJOR < 6
                 list.append(qrand() % 5 + 1);
+#else
+                list.append(QRandomGenerator::global()->bounded(1, 6));
+#endif
             }
             m_visibleRows.append(list);
         }
@@ -84,8 +93,11 @@ void GameEngine::shuffle()
                 else if(j == 1 && m_shuffleCount > 9) continue;
                 else if(j == 2 && m_shuffleCount > 11) continue;
                 else if(j == 3 && m_shuffleCount > 13) continue;
-
+#if QT_VERSION_MAJOR < 6
                 m_visibleRows[i][j] = qrand() % 5 + 1;
+#else
+                m_visibleRows[i][j] = QRandomGenerator::global()->bounded(1, 6);
+#endif
             }
         }
     }

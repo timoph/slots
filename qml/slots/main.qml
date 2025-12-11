@@ -87,11 +87,20 @@ Rectangle {
         height: 40
         radius: 5
         smooth: true
-        color: "#020202"
+        color: menuButtonMouseArea.pressed ? "#404040" : "#020202"
+        scale: menuButtonMouseArea.containsMouse ? 1.1 : 1.0
 
         Behavior on color {
             ColorAnimation {
-                duration: 100
+                duration: 150
+                easing.type: Easing.OutQuad
+            }
+        }
+        
+        Behavior on scale {
+            NumberAnimation {
+                duration: 150
+                easing.type: Easing.OutQuad
             }
         }
 
@@ -103,7 +112,9 @@ Rectangle {
         }
 
         MouseArea {
+            id: menuButtonMouseArea
             anchors.fill: parent
+            hoverEnabled: true
             onClicked: {
                 startmenu.opacity = 100
             }
@@ -205,11 +216,27 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
+        scale: spinButtonMouseArea.pressed ? 0.9 : 1.0
 
         Behavior on color {
             ColorAnimation {
-                duration: 100
+                duration: 200
+                easing.type: Easing.InOutQuad
             }
+        }
+        
+        Behavior on scale {
+            SpringAnimation {
+                spring: 5
+                damping: 0.5
+            }
+        }
+        
+        SequentialAnimation on opacity {
+            running: engine && engine.playable
+            loops: Animation.Infinite
+            NumberAnimation { to: 0.7; duration: 800; easing.type: Easing.InOutQuad }
+            NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutQuad }
         }
 
         Text {
@@ -219,6 +246,7 @@ Rectangle {
         }
 
         MouseArea {
+            id: spinButtonMouseArea
             anchors.fill: parent
             enabled: engine && engine.playable
             onClicked: {
@@ -382,14 +410,17 @@ Rectangle {
     StartMenu {
         id: startmenu
         anchors.fill: parent
-        visible: true
+        visible: opacity > 0
         opacity: 100
         onStartGame: {
             opacity = 0
         }
 
         Behavior on opacity {
-            NumberAnimation { duration: 1000 }
+            NumberAnimation {
+                duration: 500
+                easing.type: Easing.InOutCubic
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ Rectangle {
     
     // Store winning positions to draw lines
     property var winningPositions: []
+    property int lastWinAmount: 0
     
     function getSlotPosition(r, c) {
         var slots = [[r0c0, r0c1, r0c2, r0c3, r0c4],
@@ -67,9 +68,15 @@ Rectangle {
             if(r === 2 && c === 4) r2c4.itemcolor = "#ef2020"
         }
 
+        function onWin(amount) {
+            lastWinAmount = amount * (engine ? engine.bet : 1)
+            winAmountDisplay.show()
+        }
+        
         function onSpinStarted() {
             winningPositions = []
             winLineCanvas.requestPaint()
+            winAmountDisplay.hide()
             
             r0c0.itemcolor = "#dedede"
             r0c1.itemcolor = "#dedede"
@@ -94,12 +101,27 @@ Rectangle {
     width: 480
     height: 360
     color: "#020202"
-    Text {
-        text: engine ? "credits: " + engine.credits : "credits: 0"
-        color: "#dedede"
+    
+    // Credits display with golden style
+    Rectangle {
         anchors.right: parent.right
-        anchors.rightMargin: 5
-        anchors.topMargin: 5
+        anchors.top: parent.top
+        anchors.margins: 5
+        width: creditsText.width + 20
+        height: creditsText.height + 10
+        color: "#1a1a1a"
+        border.color: "#FFD700"
+        border.width: 2
+        radius: 5
+        
+        Text {
+            id: creditsText
+            text: engine ? engine.credits : "0"
+            color: "#FFD700"
+            font.pixelSize: 24
+            font.bold: true
+            anchors.centerIn: parent
+        }
     }
 
     Rectangle {
@@ -148,6 +170,104 @@ Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: 5
+    }
+    
+    // Flashy win amount display
+    Item {
+        id: winAmountDisplay
+        anchors.centerIn: parent
+        width: parent.width
+        height: parent.height
+        opacity: 0
+        z: 100
+        
+        function show() {
+            opacity = 1
+            showAnimation.restart()
+        }
+        
+        function hide() {
+            opacity = 0
+        }
+        
+        SequentialAnimation {
+            id: showAnimation
+            ParallelAnimation {
+                NumberAnimation {
+                    target: winText
+                    property: "scale"
+                    from: 0.5
+                    to: 1.5
+                    duration: 400
+                    easing.type: Easing.OutBack
+                }
+                NumberAnimation {
+                    target: winText
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: 300
+                }
+            }
+            PauseAnimation { duration: 1500 }
+            ParallelAnimation {
+                NumberAnimation {
+                    target: winText
+                    property: "scale"
+                    to: 2.0
+                    duration: 400
+                    easing.type: Easing.InBack
+                }
+                NumberAnimation {
+                    target: winText
+                    property: "opacity"
+                    to: 0
+                    duration: 400
+                }
+            }
+            ScriptAction {
+                script: winAmountDisplay.hide()
+            }
+        }
+        
+        // Glow background
+        Rectangle {
+            anchors.centerIn: parent
+            width: winText.width + 80
+            height: winText.height + 40
+            color: "#40000000"
+            border.color: "#FFD700"
+            border.width: 3
+            radius: 15
+            opacity: winText.opacity
+            scale: winText.scale * 0.9
+            
+            SequentialAnimation on border.width {
+                running: winAmountDisplay.opacity > 0
+                loops: Animation.Infinite
+                NumberAnimation { to: 5; duration: 600; easing.type: Easing.InOutQuad }
+                NumberAnimation { to: 3; duration: 600; easing.type: Easing.InOutQuad }
+            }
+        }
+        
+        Text {
+            id: winText
+            text: "+ " + lastWinAmount
+            anchors.centerIn: parent
+            color: "#FFD700"
+            font.pixelSize: 56
+            font.bold: true
+            style: Text.Outline
+            styleColor: "#000000"
+            scale: 1.0
+            
+            SequentialAnimation on color {
+                running: winAmountDisplay.opacity > 0
+                loops: Animation.Infinite
+                ColorAnimation { to: "#FFF700"; duration: 400 }
+                ColorAnimation { to: "#FFD700"; duration: 400 }
+            }
+        }
     }
 
     Rectangle {

@@ -22,7 +22,11 @@ GameEngine::GameEngine(QObject *parent) :
     for(int i = 0; i < 3; i++) {
         QList<int> list;
         for(int j = 0; j < 5; j++) {
-            list.append(j);
+#if QT_VERSION_MAJOR < 6
+            list.append(qrand() % 5 + 1);
+#else
+            list.append(QRandomGenerator::global()->bounded(1, 6));
+#endif
         }
         m_visibleRows.append(list);
     }
@@ -273,7 +277,7 @@ void GameEngine::checkLines()
             if(m_visibleRows.at(1).at(3) == no) { // x4
                 factor = 3;
                 emit winningSlot(1, 3);
-                if(m_visibleRows.at(1).at(4) == 0) { // x5
+                if(m_visibleRows.at(1).at(4) == no) { // x5
                     factor = 4;
                     emit winningSlot(1, 4);
                 }

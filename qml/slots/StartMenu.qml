@@ -28,7 +28,7 @@ Rectangle {
             width: 120
             height: 40
             label: "Resume game"
-            visible: base.gameOnGoing && engine.credits > 0
+            visible: base.gameOnGoing && engine && engine.credits > 0
 
             onMyButtonClicked: {
                 startGame()

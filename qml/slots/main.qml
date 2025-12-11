@@ -6,7 +6,8 @@ Rectangle {
     Connections {
         target: engine
         // update items from engine
-        onSlotsSpinned: {
+        function onSlotsSpinned() {
+            if (!engine) return
             // 1st row
             r0c0.value = engine.itemForPlace(0, 0)
             r0c1.value = engine.itemForPlace(0, 1)
@@ -27,7 +28,7 @@ Rectangle {
             r2c4.value = engine.itemForPlace(2, 4)
         }
 
-        onWinningSlot: {
+        function onWinningSlot(r, c) {
             console.log(r)
             if(r === 0 && c === 0) r0c0.itemcolor = "#ef2020"
             if(r === 0 && c === 1) r0c1.itemcolor = "#ef2020"
@@ -48,7 +49,7 @@ Rectangle {
             if(r === 2 && c === 4) r2c4.itemcolor = "#ef2020"
         }
 
-        onSpinStarted: {
+        function onSpinStarted() {
             r0c0.itemcolor = "#dedede"
             r0c1.itemcolor = "#dedede"
             r0c2.itemcolor = "#dedede"
@@ -73,7 +74,7 @@ Rectangle {
     height: 360
     color: "#020202"
     Text {
-        text: "credits: " + engine.credits
+        text: engine ? "credits: " + engine.credits : "credits: 0"
         color: "#dedede"
         anchors.right: parent.right
         anchors.rightMargin: 5
@@ -110,7 +111,7 @@ Rectangle {
     }
 
     Text {
-        text: engine.credits === 0 ? "You are broke :(" : engine.message
+        text: engine ? (engine.credits === 0 ? "You are broke :(" : engine.message) : ""
         color: "#dedede"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
@@ -187,7 +188,7 @@ Rectangle {
 
     Text {
         id: totalBetText
-        text: "Total bet: " + engine.bet * engine.lines
+        text: engine ? "Total bet: " + engine.bet * engine.lines : "Total bet: 0"
         color: "#dedede"
         anchors.bottom: spinButton.top
         anchors.bottomMargin: 5
@@ -200,7 +201,7 @@ Rectangle {
         height: 50
         radius: 45
         smooth: true
-        color: engine.playable ? "#02de02" : "#024502"
+        color: (engine && engine.playable) ? "#02de02" : "#024502"
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
@@ -219,9 +220,9 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent
-            enabled: engine.playable
+            enabled: engine && engine.playable
             onClicked: {
-                engine.spin()
+                if (engine) engine.spin()
             }
         }
     }
@@ -257,7 +258,11 @@ Rectangle {
             MouseArea {
                 id: decreaseBetMouseArea
                 anchors.fill: parent
-                onClicked: engine.bet === 1 ? engine.bet = 1 : engine.bet = engine.bet - 1
+                onClicked: {
+                    if (engine) {
+                        engine.bet === 1 ? engine.bet = 1 : engine.bet = engine.bet - 1
+                    }
+                }
             }
         }
 
@@ -268,7 +273,7 @@ Rectangle {
             color: "#020202"
             Text {
                 id: betValueText
-                text: engine.bet
+                text: engine ? engine.bet : "0"
                 anchors.centerIn: parent
                 color: "#dedede"
             }
@@ -289,7 +294,11 @@ Rectangle {
             MouseArea {
                 id: increaseBetMouseArea
                 anchors.fill: parent
-                onClicked: engine.bet === 10 ? engine.bet = 10 : engine.bet = engine.bet + 1
+                onClicked: {
+                    if (engine) {
+                        engine.bet === 10 ? engine.bet = 10 : engine.bet = engine.bet + 1
+                    }
+                }
             }
         }
     }
@@ -325,7 +334,11 @@ Rectangle {
             MouseArea {
                 id: decreaseLinesMouseArea
                 anchors.fill: parent
-                onClicked: engine.lines === 1 ? engine.lines = 1 : engine.lines = engine.lines - 1
+                onClicked: {
+                    if (engine) {
+                        engine.lines === 1 ? engine.lines = 1 : engine.lines = engine.lines - 1
+                    }
+                }
             }
         }
 
@@ -336,7 +349,7 @@ Rectangle {
             color: "#020202"
             Text {
                 id: linesText
-                text: engine.lines
+                text: engine ? engine.lines : "0"
                 anchors.centerIn: parent
                 color: "#dedede"
             }
@@ -357,7 +370,11 @@ Rectangle {
             MouseArea {
                 id: increaseLinesMouseArea
                 anchors.fill: parent
-                onClicked: engine.lines === 9 ? engine.lines = 9 : engine.lines = engine.lines + 1
+                onClicked: {
+                    if (engine) {
+                        engine.lines === 9 ? engine.lines = 9 : engine.lines = engine.lines + 1
+                    }
+                }
             }
         }
     }

@@ -7,16 +7,15 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# Try Qt6 first, fallback to Qt5
-find_package(Qt6 COMPONENTS Core Widgets Qml Quick QUIET)
-if (Qt6_FOUND)
-    set(QT_VERSION_MAJOR 6)
-    message(STATUS "Building with Qt6")
-else()
-    find_package(Qt5 5.15 REQUIRED COMPONENTS Core Widgets Qml Quick)
-    set(QT_VERSION_MAJOR 5)
-    message(STATUS "Building with Qt5")
+# Set default build type if not specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
 endif()
+
+# Find Qt (tries Qt6 first, then Qt5)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets Qml Quick)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets Qml Quick)
+message(STATUS "Building with Qt${QT_VERSION_MAJOR}")
 
 # Set output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -34,18 +33,10 @@ set(HEADERS
 )
 
 # Resource files
-if(QT_VERSION_MAJOR EQUAL 6 OR QT_VERSION_MAJOR EQUAL 5)
-    set(RESOURCES
-        resources_qt5.qrc
-        images.qrc
-    )
-    add_compile_definitions(QT5BUILD)
-else()
-    set(RESOURCES
-        resources.qrc
-        images.qrc
-    )
-endif()
+set(RESOURCES
+    resources.qrc
+    images.qrc
+)
 
 # QML files (for reference)
 set(QML_FILES
@@ -63,21 +54,12 @@ add_executable(${PROJECT_NAME}
 )
 
 # Link Qt libraries
-if (Qt6_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        Qt6::Core
-        Qt6::Widgets
-        Qt6::Qml
-        Qt6::Quick
-    )
-else()
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        Qt5::Core
-        Qt5::Widgets
-        Qt5::Qml
-        Qt5::Quick
-    )
-endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Qml
+    Qt${QT_VERSION_MAJOR}::Quick
+)
 
 # Platform-specific settings
 if(APPLE)

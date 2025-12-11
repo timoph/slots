@@ -101,28 +101,6 @@ Rectangle {
     width: 480
     height: 360
     color: "#020202"
-    
-    // Credits display with golden style
-    Rectangle {
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: 5
-        width: creditsText.width + 20
-        height: creditsText.height + 10
-        color: "#1a1a1a"
-        border.color: "#FFD700"
-        border.width: 2
-        radius: 5
-        
-        Text {
-            id: creditsText
-            text: engine ? engine.credits : "0"
-            color: "#FFD700"
-            font.pixelSize: 24
-            font.bold: true
-            anchors.centerIn: parent
-        }
-    }
 
     Rectangle {
         id: menuButton
@@ -275,8 +253,8 @@ Rectangle {
         width: 80 * 5
         height: 80 * 3
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: spinButton.top
-        anchors.bottomMargin: 30
+        anchors.bottom: controlPanel.top
+        anchors.bottomMargin: 10
         color: "#020202"
 
         // Canvas for drawing winning lines
@@ -370,210 +348,357 @@ Rectangle {
         }
     }
 
-    Text {
-        id: totalBetText
-        text: engine ? "Total bet: " + engine.bet * engine.lines : "Total bet: 0"
-        color: "#dedede"
-        anchors.bottom: spinButton.top
-        anchors.bottomMargin: 5
-        anchors.horizontalCenter: spinButton.horizontalCenter
-    }
-
+    // Bottom control panel
     Rectangle {
-        id: spinButton
-        width: 50
-        height: 50
-        radius: 45
-        smooth: true
-        color: (engine && engine.playable) ? "#02de02" : "#024502"
+        id: controlPanel
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
-        scale: spinButtonMouseArea.pressed ? 0.9 : 1.0
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 200
-                easing.type: Easing.InOutQuad
-            }
-        }
+        width: parent.width - 20
+        height: 90
+        color: "#1a1a1a"
+        border.color: "#3a3a3a"
+        border.width: 2
+        radius: 8
         
-        Behavior on scale {
-            SpringAnimation {
-                spring: 5
-                damping: 0.5
-            }
-        }
-        
-        SequentialAnimation on opacity {
-            running: engine && engine.playable
-            loops: Animation.Infinite
-            NumberAnimation { to: 0.7; duration: 800; easing.type: Easing.InOutQuad }
-            NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutQuad }
-        }
-
-        Text {
-            id: spinButtonText
-            text: qsTr("Spin")
-            anchors.centerIn: parent
-        }
-
-        MouseArea {
-            id: spinButtonMouseArea
+        Row {
             anchors.fill: parent
-            enabled: engine && engine.playable
-            onClicked: {
-                if (engine) engine.spin()
-            }
-        }
-    }
-
-    Text {
-        id: betLabel
-        text: qsTr("bet")
-        anchors.bottom: betRow.top
-        anchors.horizontalCenter: betRow.horizontalCenter
-        color: "#dedede"
-    }
-
-    // bet control
-    Row {
-        id: betRow
-        anchors.bottom: parent.bottom
-        anchors.right: spinButton.left
-        anchors.rightMargin: 30
-        anchors.bottomMargin: 5
-
-        Rectangle {
-            id: decreaseBetButton
-            width: 40
-            height: 30
-            color: "#020202"
-            Text {
-                id: decreaseBetText
-                text: qsTr("-")
-                anchors.centerIn: parent
-                color: "#dedede"
-            }
-
-            MouseArea {
-                id: decreaseBetMouseArea
-                anchors.fill: parent
-                onClicked: {
-                    if (engine) {
-                        engine.bet === 1 ? engine.bet = 1 : engine.bet = engine.bet - 1
+            anchors.margins: 10
+            spacing: 5
+            
+            // Credits display on the left
+            Column {
+                width: 100
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 3
+                
+                Text {
+                    text: qsTr("CREDITS")
+                    color: "#999999"
+                    font.pixelSize: 9
+                    font.bold: true
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+                
+                Rectangle {
+                    width: 85
+                    height: 38
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "#0a0a0a"
+                    border.color: "#FFD700"
+                    border.width: 2
+                    radius: 4
+                    
+                    Text {
+                        id: creditsText
+                        text: engine ? engine.credits : "0"
+                        color: "#FFD700"
+                        font.pixelSize: 20
+                        font.bold: true
+                        anchors.centerIn: parent
                     }
                 }
             }
-        }
+            
+            // Bet and Lines controls with total bet display
+            Column {
+                width: 200
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 4
+                
+                // Total bet display at the top
+                Rectangle {
+                    id: totalBetDisplay
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: 150
+                    height: 20
+                    color: "#2a2a2a"
+                    border.color: "#FFD700"
+                    border.width: 1
+                    radius: 3
+                    
+                    Text {
+                        anchors.centerIn: parent
+                        text: engine ? "TOTAL BET: " + (engine.bet * engine.lines) : "TOTAL BET: 0"
+                        color: "#FFD700"
+                        font.pixelSize: 10
+                        font.bold: true
+                    }
+                }
+                
+                // Row with bet and lines controls
+                Row {
+                    spacing: 10
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    
+                    // Bet controls
+                    Column {
+                        spacing: 3
+                        
+                        Text {
+                            text: qsTr("BET")
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: "#999999"
+                            font.pixelSize: 9
+                            font.bold: true
+                        }
+                        
+                        Row {
+                            spacing: 2
+                            
+                            Rectangle {
+                                id: decreaseBetButton
+                                width: 26
+                                height: 26
+                                radius: 3
+                                color: decreaseBetMouseArea.pressed ? "#4a4a4a" : (decreaseBetMouseArea.containsMouse ? "#3a3a3a" : "#2a2a2a")
+                                border.color: "#555555"
+                                border.width: 1
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 150 }
+                                }
+                                
+                                Text {
+                                    text: qsTr("−")
+                                    anchors.centerIn: parent
+                                    color: "#dedede"
+                                    font.pixelSize: 16
+                                    font.bold: true
+                                }
 
-        Rectangle {
-            id: betRect
-            width: 40
-            height: 30
-            color: "#020202"
-            Text {
-                id: betValueText
-                text: engine ? engine.bet : "0"
-                anchors.centerIn: parent
-                color: "#dedede"
-            }
-        }
+                                MouseArea {
+                                    id: decreaseBetMouseArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        if (engine) {
+                                            engine.bet = Math.max(1, engine.bet - 1)
+                                        }
+                                    }
+                                }
+                            }
 
-        Rectangle {
-            id: increaseBetButton
-            width: 40
-            height: 30
-            color: "#020202"
-            Text {
-                id: increaseBetText
-                text: qsTr("+")
-                anchors.centerIn: parent
-                color: "#dedede"
-            }
+                            Rectangle {
+                                width: 32
+                                height: 26
+                                radius: 3
+                                color: "#0a0a0a"
+                                border.color: "#FFD700"
+                                border.width: 1
+                                
+                                Text {
+                                    text: engine ? engine.bet : "0"
+                                    anchors.centerIn: parent
+                                    color: "#FFD700"
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                }
+                            }
 
-            MouseArea {
-                id: increaseBetMouseArea
-                anchors.fill: parent
-                onClicked: {
-                    if (engine) {
-                        engine.bet === 10 ? engine.bet = 10 : engine.bet = engine.bet + 1
+                            Rectangle {
+                                id: increaseBetButton
+                                width: 26
+                                height: 26
+                                radius: 3
+                                color: increaseBetMouseArea.pressed ? "#4a4a4a" : (increaseBetMouseArea.containsMouse ? "#3a3a3a" : "#2a2a2a")
+                                border.color: "#555555"
+                                border.width: 1
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 150 }
+                                }
+                                
+                                Text {
+                                    text: qsTr("+")
+                                    anchors.centerIn: parent
+                                    color: "#dedede"
+                                    font.pixelSize: 16
+                                    font.bold: true
+                                }
+
+                                MouseArea {
+                                    id: increaseBetMouseArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        if (engine) {
+                                            engine.bet = Math.min(10, engine.bet + 1)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Lines controls
+                    Column {
+                        spacing: 3
+                        
+                        Text {
+                            text: qsTr("LINES")
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: "#999999"
+                            font.pixelSize: 9
+                            font.bold: true
+                        }
+                        
+                        Row {
+                            spacing: 2
+                            
+                            Rectangle {
+                                id: decreaseLinesButton
+                                width: 26
+                                height: 26
+                                radius: 3
+                                color: decreaseLinesMouseArea.pressed ? "#4a4a4a" : (decreaseLinesMouseArea.containsMouse ? "#3a3a3a" : "#2a2a2a")
+                                border.color: "#555555"
+                                border.width: 1
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 150 }
+                                }
+                                
+                                Text {
+                                    text: qsTr("−")
+                                    anchors.centerIn: parent
+                                    color: "#dedede"
+                                    font.pixelSize: 16
+                                    font.bold: true
+                                }
+
+                                MouseArea {
+                                    id: decreaseLinesMouseArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        if (engine) {
+                                            engine.lines = Math.max(1, engine.lines - 1)
+                                        }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                width: 32
+                                height: 26
+                                radius: 3
+                                color: "#0a0a0a"
+                                border.color: "#FFD700"
+                                border.width: 1
+                                
+                                Text {
+                                    text: engine ? engine.lines : "0"
+                                    anchors.centerIn: parent
+                                    color: "#FFD700"
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                }
+                            }
+
+                            Rectangle {
+                                id: increaseLinesButton
+                                width: 26
+                                height: 26
+                                radius: 3
+                                color: increaseLinesMouseArea.pressed ? "#4a4a4a" : (increaseLinesMouseArea.containsMouse ? "#3a3a3a" : "#2a2a2a")
+                                border.color: "#555555"
+                                border.width: 1
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 150 }
+                                }
+                                
+                                Text {
+                                    text: qsTr("+")
+                                    anchors.centerIn: parent
+                                    color: "#dedede"
+                                    font.pixelSize: 16
+                                    font.bold: true
+                                }
+
+                                MouseArea {
+                                    id: increaseLinesMouseArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        if (engine) {
+                                            engine.lines = Math.min(5, engine.lines + 1)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
-
-    Text {
-        id: linesLabel
-        text: qsTr("lines")
-        anchors.bottom: linesRow.top
-        anchors.horizontalCenter: linesRow.horizontalCenter
-        color: "#dedede"
-    }
-
-    // selected lines
-    Row {
-        id: linesRow
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 5
-        anchors.left: spinButton.right
-        anchors.leftMargin: 30
-
-        Rectangle {
-            id: decreaseLinesButton
-            width: 40
-            height: 30
-            color: "#020202"
-            Text {
-                id: decreaseLinesText
-                text: qsTr("-")
-                anchors.centerIn: parent
-                color: "#dedede"
-            }
-
-            MouseArea {
-                id: decreaseLinesMouseArea
-                anchors.fill: parent
-                onClicked: {
-                    if (engine) {
-                        engine.lines === 1 ? engine.lines = 1 : engine.lines = engine.lines - 1
+            
+            // Spin button section
+            Column {
+                width: 140
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 4
+                
+                // Spin button
+                Rectangle {
+                    id: spinButton
+                    width: 55
+                    height: 55
+                    radius: 28
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    smooth: true
+                    color: (engine && engine.playable) ? "#02de02" : "#024502"
+                    border.color: (engine && engine.playable) ? "#04ff04" : "#036503"
+                    border.width: 3
+                    scale: spinButtonMouseArea.pressed ? 0.85 : (spinButtonMouseArea.containsMouse ? 1.1 : 1.0)
+                    
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
                     }
-                }
-            }
-        }
+                    
+                    Behavior on scale {
+                        SpringAnimation {
+                            spring: 5
+                            damping: 0.5
+                        }
+                    }
+                    
+                    SequentialAnimation on opacity {
+                        running: engine && engine.playable
+                        loops: Animation.Infinite
+                        NumberAnimation { to: 0.8; duration: 800; easing.type: Easing.InOutQuad }
+                        NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutQuad }
+                    }
+                    
+                    // Inner glow
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: parent.width - 10
+                        height: parent.height - 10
+                        radius: width / 2
+                        color: "transparent"
+                        border.color: (engine && engine.playable) ? "#88ffffff" : "transparent"
+                        border.width: 2
+                    }
 
-        Rectangle {
-            id: linesRect
-            width: 40
-            height: 30
-            color: "#020202"
-            Text {
-                id: linesText
-                text: engine ? engine.lines : "0"
-                anchors.centerIn: parent
-                color: "#dedede"
-            }
-        }
+                    Text {
+                        text: qsTr("SPIN")
+                        anchors.centerIn: parent
+                        color: "#000000"
+                        font.pixelSize: 14
+                        font.bold: true
+                    }
 
-        Rectangle {
-            id: increaseLinesButton
-            width: 40
-            height: 30
-            color: "#020202"
-            Text {
-                id: increaseLinesText
-                text: qsTr("+")
-                anchors.centerIn: parent
-                color: "#dedede"
-            }
-
-            MouseArea {
-                id: increaseLinesMouseArea
-                anchors.fill: parent
-                onClicked: {
-                    if (engine) {
-                        engine.lines === 9 ? engine.lines = 9 : engine.lines = engine.lines + 1
+                    MouseArea {
+                        id: spinButtonMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        enabled: engine && engine.playable
+                        onClicked: {
+                            if (engine) engine.spin()
+                        }
                     }
                 }
             }

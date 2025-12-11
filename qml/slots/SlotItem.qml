@@ -8,23 +8,23 @@ Rectangle {
     width: 80
     height: 80
     color: "#020202"
-    border.color: "#efefef"
-    border.width: 0
+    border.color: itemcolor === "#ef2020" ? "#FFD700" : "#1a1a1a"
+    border.width: itemcolor === "#ef2020" ? 4 : 1
     smooth: true
     
-    scale: itemcolor === "#ef2020" ? 1.1 : 1.0
+    Behavior on border.color {
+        ColorAnimation { duration: 150 }
+    }
     
-    Behavior on scale {
-        SpringAnimation {
-            spring: 3
-            damping: 0.3
-        }
+    Behavior on border.width {
+        NumberAnimation { duration: 150 }
     }
 
     Image {
         id: image
         source: "image://images/" + value
         anchors.fill: parent
+        anchors.margins: 5
         smooth: true
         
         Behavior on source {
@@ -35,29 +35,22 @@ Rectangle {
             }
         }
     }
-
-    Text {
-        id: txt
-        color: parent.itemcolor
-        text: parent.value
-        font.pixelSize: 48
-        anchors.centerIn: parent
-        opacity: 50
-
-        Behavior on color {
-            ColorAnimation { duration: 300; easing.type: Easing.OutQuad }
-        }
-    }
     
+    // Golden glow effect for winners
     Rectangle {
         anchors.fill: parent
+        anchors.margins: -3
         color: "transparent"
-        border.color: itemcolor
-        border.width: itemcolor === "#ef2020" ? 3 : 0
+        border.color: "#FFD700"
+        border.width: itemcolor === "#ef2020" ? 2 : 0
         radius: 4
+        opacity: 0.6
         
-        Behavior on border.width {
-            NumberAnimation { duration: 200 }
+        SequentialAnimation on opacity {
+            running: itemcolor === "#ef2020"
+            loops: Animation.Infinite
+            NumberAnimation { to: 0.3; duration: 800; easing.type: Easing.InOutQuad }
+            NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutQuad }
         }
     }
 }

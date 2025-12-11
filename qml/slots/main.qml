@@ -3,6 +3,19 @@
 import QtQuick 2.3
 
 Rectangle {
+    id: root
+    
+    // Store winning positions to draw lines
+    property var winningPositions: []
+    
+    function getSlotPosition(r, c) {
+        var slots = [[r0c0, r0c1, r0c2, r0c3, r0c4],
+                     [r1c0, r1c1, r1c2, r1c3, r1c4],
+                     [r2c0, r2c1, r2c2, r2c3, r2c4]]
+        var slot = slots[r][c]
+        return Qt.point(slot.x + slot.width/2, slot.y + slot.height/2)
+    }
+    
     Connections {
         target: engine
         // update items from engine
@@ -29,7 +42,12 @@ Rectangle {
         }
 
         function onWinningSlot(r, c) {
-            console.log(r)
+            console.log("WIN at:", r, c)
+            
+            // Add to winning positions for line drawing
+            winningPositions.push({r: r, c: c})
+            winLineCanvas.requestPaint()
+            
             if(r === 0 && c === 0) r0c0.itemcolor = "#ef2020"
             if(r === 0 && c === 1) r0c1.itemcolor = "#ef2020"
             if(r === 0 && c === 2) r0c2.itemcolor = "#ef2020"
@@ -50,6 +68,9 @@ Rectangle {
         }
 
         function onSpinStarted() {
+            winningPositions = []
+            winLineCanvas.requestPaint()
+            
             r0c0.itemcolor = "#dedede"
             r0c1.itemcolor = "#dedede"
             r0c2.itemcolor = "#dedede"
@@ -137,6 +158,38 @@ Rectangle {
         anchors.bottom: spinButton.top
         anchors.bottomMargin: 30
         color: "#020202"
+
+        // Canvas for drawing winning lines
+        Canvas {
+            id: winLineCanvas
+            anchors.fill: parent
+            z: 10
+            
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+                
+                if(winningPositions.length > 0) {
+                    // Draw line connecting all winning positions
+                    ctx.strokeStyle = "#FFD700"
+                    ctx.lineWidth = 4
+                    ctx.lineCap = "round"
+                    ctx.shadowColor = "#FFD700"
+                    ctx.shadowBlur = 10
+                    
+                    ctx.beginPath()
+                    var firstPos = getSlotPosition(winningPositions[0].r, winningPositions[0].c)
+                    ctx.moveTo(firstPos.x, firstPos.y)
+                    
+                    for(var i = 1; i < winningPositions.length; i++) {
+                        var pos = getSlotPosition(winningPositions[i].r, winningPositions[i].c)
+                        ctx.lineTo(pos.x, pos.y)
+                    }
+                    
+                    ctx.stroke()
+                }
+            }
+        }
 
         Grid {
             id: slotGrid

@@ -199,10 +199,17 @@ Rectangle {
         }
     }
 
-    width: 480
-    height: 360
+    width: 800
+    height: 600
     color: "#020202"
     
+    Item {
+        id: gameScaler
+        width: 480
+        height: 360
+        anchors.centerIn: parent
+        scale: Math.min(parent.width / width, parent.height / height)
+
     // Bonus triggered display
     Item {
         id: bonusDisplay
@@ -1065,6 +1072,7 @@ Rectangle {
             }
         }
     }
+    } // End of gameScaler
 
     // Add Credits Dialog
     Rectangle {

@@ -202,97 +202,6 @@ Rectangle {
     width: 480
     height: 360
     color: "#020202"
-
-    Rectangle {
-        id: menuButton
-        width: 40
-        height: 40
-        radius: 5
-        smooth: true
-        color: menuButtonMouseArea.pressed ? "#404040" : "#020202"
-        scale: menuButtonMouseArea.containsMouse ? 1.1 : 1.0
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 150
-                easing.type: Easing.OutQuad
-            }
-        }
-        
-        Behavior on scale {
-            NumberAnimation {
-                duration: 150
-                easing.type: Easing.OutQuad
-            }
-        }
-
-        Text {
-            id: menuButtonText
-            text: qsTr("Menu")
-            anchors.centerIn: parent
-            color: "#dedede"
-        }
-
-        MouseArea {
-            id: menuButtonMouseArea
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: {
-                startmenu.opacity = 100
-            }
-        }
-    }
-
-    Text {
-        text: engine ? (engine.credits === 0 ? "You are broke :(" : engine.message) : ""
-        color: "#dedede"
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: 5
-    }
-    
-    // Free Spins Counter
-    Rectangle {
-        id: freeSpinsCounter
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: 10
-        width: 120
-        height: 40
-        color: "#1a1a1a"
-        border.color: "#FF44FF"
-        border.width: 2
-        radius: 8
-        visible: engine && engine.freeSpins > 0
-        
-        Column {
-            anchors.centerIn: parent
-            spacing: 2
-            
-            Text {
-                text: "FREE SPINS"
-                color: "#FF44FF"
-                font.pixelSize: 9
-                font.bold: true
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-            
-            Text {
-                text: engine ? engine.freeSpins : "0"
-                color: "#FFD700"
-                font.pixelSize: 20
-                font.bold: true
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-        }
-        
-        SequentialAnimation on border.width {
-            running: freeSpinsCounter.visible
-            loops: Animation.Infinite
-            NumberAnimation { to: 4; duration: 500; easing.type: Easing.InOutQuad }
-            NumberAnimation { to: 2; duration: 500; easing.type: Easing.InOutQuad }
-        }
-    }
     
     // Bonus triggered display
     Item {
@@ -1116,12 +1025,26 @@ Rectangle {
                         border.width: 2
                     }
 
-                    Text {
-                        text: qsTr("SPIN")
+                    Column {
                         anchors.centerIn: parent
-                        color: "#000000"
-                        font.pixelSize: 14
-                        font.bold: true
+                        spacing: 2
+                        
+                        Text {
+                            text: (engine && engine.freeSpins > 0) ? "FREE" : qsTr("SPIN")
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: (engine && engine.freeSpins > 0) ? "#FF44FF" : "#000000"
+                            font.pixelSize: (engine && engine.freeSpins > 0) ? 11 : 14
+                            font.bold: true
+                        }
+                        
+                        Text {
+                            text: (engine && engine.freeSpins > 0) ? engine.freeSpins : ""
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: "#FFD700"
+                            font.pixelSize: 16
+                            font.bold: true
+                            visible: engine && engine.freeSpins > 0
+                        }
                     }
 
                     MouseArea {
@@ -1134,23 +1057,6 @@ Rectangle {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    StartMenu {
-        id: startmenu
-        anchors.fill: parent
-        visible: opacity > 0
-        opacity: 100
-        onStartGame: {
-            opacity = 0
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 500
-                easing.type: Easing.InOutCubic
             }
         }
     }

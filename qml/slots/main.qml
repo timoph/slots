@@ -26,6 +26,57 @@ Rectangle {
         onTriggered: showLinePatterns = false
     }
     
+    // Timers to stop reels one by one
+    Timer {
+        id: stopReel0Timer
+        interval: 150
+        onTriggered: {
+            r0c0.stopRolling()
+            r1c0.stopRolling()
+            r2c0.stopRolling()
+        }
+    }
+    
+    Timer {
+        id: stopReel1Timer
+        interval: 300
+        onTriggered: {
+            r0c1.stopRolling()
+            r1c1.stopRolling()
+            r2c1.stopRolling()
+        }
+    }
+    
+    Timer {
+        id: stopReel2Timer
+        interval: 450
+        onTriggered: {
+            r0c2.stopRolling()
+            r1c2.stopRolling()
+            r2c2.stopRolling()
+        }
+    }
+    
+    Timer {
+        id: stopReel3Timer
+        interval: 600
+        onTriggered: {
+            r0c3.stopRolling()
+            r1c3.stopRolling()
+            r2c3.stopRolling()
+        }
+    }
+    
+    Timer {
+        id: stopReel4Timer
+        interval: 750
+        onTriggered: {
+            r0c4.stopRolling()
+            r1c4.stopRolling()
+            r2c4.stopRolling()
+        }
+    }
+    
     Connections {
         target: engine
         
@@ -58,6 +109,13 @@ Rectangle {
             r2c2.value = engine.itemForPlace(2, 2)
             r2c3.value = engine.itemForPlace(2, 3)
             r2c4.value = engine.itemForPlace(2, 4)
+            
+            // Start stopping reels one by one
+            stopReel0Timer.start()
+            stopReel1Timer.start()
+            stopReel2Timer.start()
+            stopReel3Timer.start()
+            stopReel4Timer.start()
         }
 
         function onWinningSlot(r, c) {
@@ -98,6 +156,18 @@ Rectangle {
             linePatternsCanvas.requestPaint()
             linePatternTimer.stop()
             winAmountDisplay.hide()
+            
+            // Stop all stop timers if running
+            stopReel0Timer.stop()
+            stopReel1Timer.stop()
+            stopReel2Timer.stop()
+            stopReel3Timer.stop()
+            stopReel4Timer.stop()
+            
+            // Start rolling animation on all slots
+            r0c0.startRolling(); r0c1.startRolling(); r0c2.startRolling(); r0c3.startRolling(); r0c4.startRolling()
+            r1c0.startRolling(); r1c1.startRolling(); r1c2.startRolling(); r1c3.startRolling(); r1c4.startRolling()
+            r2c0.startRolling(); r2c1.startRolling(); r2c2.startRolling(); r2c3.startRolling(); r2c4.startRolling()
             
             r0c0.itemcolor = "#dedede"
             r0c1.itemcolor = "#dedede"

@@ -26,14 +26,12 @@ GameEngine::GameEngine(QObject *parent) :
     for(int i = 0; i < 3; i++) {
         QList<int> list;
         for(int j = 0; j < 5; j++) {
-#if QT_VERSION_MAJOR < 6
-            list.append(qrand() % 9 + 1);
-#else
-            list.append(QRandomGenerator::global()->bounded(1, 10));
-#endif
+            list.append(generateRandomSymbol());
         }
         m_visibleRows.append(list);
     }
+    
+    ensureValidBoard();
 
     populatePayTable();
 #if QT_VERSION_MAJOR < 6
@@ -85,6 +83,60 @@ void GameEngine::spin()
     shuffle();
 }
 
+int GameEngine::generateRandomSymbol()
+{
+    int threshold = m_scatterChange * 1000;
+    int r = 0;
+#if QT_VERSION_MAJOR < 6
+    r = qrand() % 1000;
+#else
+    r = QRandomGenerator::global()->bounded(0, 1000);
+#endif
+
+    if (r < threshold) {
+        return 1;
+    } else {
+#if QT_VERSION_MAJOR < 6
+        return (qrand() % 4) + 2;
+#else
+        return QRandomGenerator::global()->bounded(2, 6);
+#endif
+    }
+}
+
+void GameEngine::ensureValidBoard()
+{
+    // Ensure only one bonus per reel (column)
+    // Bonus symbol is value 1
+    for(int col = 0; col < 5; col++) {
+        int bonusCount = 0;
+        int bonusRow = -1;
+        
+        // Count bonuses in this column
+        for(int row = 0; row < 3; row++) {
+            if(m_visibleRows.at(row).at(col) == 1) {
+                bonusCount++;
+                if(bonusRow == -1) {
+                    bonusRow = row;
+                }
+            }
+        }
+        
+        // If more than one bonus in this column, replace extras with random symbols (2-5)
+        if(bonusCount > 1) {
+            for(int row = 0; row < 3; row++) {
+                if(m_visibleRows.at(row).at(col) == 1 && row != bonusRow) {
+#if QT_VERSION_MAJOR < 6
+                    m_visibleRows[row][col] = qrand() % 4 + 2; // Random value 2-5
+#else
+                    m_visibleRows[row][col] = QRandomGenerator::global()->bounded(2, 6); // Random value 2-5
+#endif
+                }
+            }
+        }
+    }
+}
+
 void GameEngine::shuffle()
 {
     m_shuffleCount++;
@@ -93,11 +145,7 @@ void GameEngine::shuffle()
         for(int i = 0; i < 3; i++) {
             QList<int> list;
             for(int j = 0; j < 5; j++) {
-#if QT_VERSION_MAJOR < 6
-                list.append(qrand() % 9 + 1);
-#else
-                list.append(QRandomGenerator::global()->bounded(1, 10));
-#endif
+                list.append(generateRandomSymbol());
             }
             m_visibleRows.append(list);
         }
@@ -109,11 +157,7 @@ void GameEngine::shuffle()
                 else if(j == 1 && m_shuffleCount > 9) continue;
                 else if(j == 2 && m_shuffleCount > 11) continue;
                 else if(j == 3 && m_shuffleCount > 13) continue;
-#if QT_VERSION_MAJOR < 6
-                m_visibleRows[i][j] = qrand() % 9 + 1;
-#else
-                m_visibleRows[i][j] = QRandomGenerator::global()->bounded(1, 10);
-#endif
+                m_visibleRows[i][j] = generateRandomSymbol();
             }
         }
     }
@@ -125,35 +169,7 @@ void GameEngine::shuffle()
     else {
         m_shuffleCount = 0;
         
-        // Ensure only one bonus per reel (column)
-        // Bonus symbol is value 1
-        for(int col = 0; col < 5; col++) {
-            int bonusCount = 0;
-            int bonusRow = -1;
-            
-            // Count bonuses in this column
-            for(int row = 0; row < 3; row++) {
-                if(m_visibleRows.at(row).at(col) == 1) {
-                    bonusCount++;
-                    if(bonusRow == -1) {
-                        bonusRow = row;
-                    }
-                }
-            }
-            
-            // If more than one bonus in this column, replace extras with random symbols (2-9)
-            if(bonusCount > 1) {
-                for(int row = 0; row < 3; row++) {
-                    if(m_visibleRows.at(row).at(col) == 1 && row != bonusRow) {
-#if QT_VERSION_MAJOR < 6
-                        m_visibleRows[row][col] = qrand() % 8 + 2; // Random value 2-9
-#else
-                        m_visibleRows[row][col] = QRandomGenerator::global()->bounded(2, 10); // Random value 2-9
-#endif
-                    }
-                }
-            }
-        }
+        ensureValidBoard();
         
         emit slotsSpinned();
         checkLines();

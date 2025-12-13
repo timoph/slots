@@ -65,6 +65,8 @@ private slots:
 // private functions
 private:
     void populatePayTable();
+    int generateRandomSymbol();
+    void ensureValidBoard();
 
 // private variables
 private:

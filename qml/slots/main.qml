@@ -8,6 +8,8 @@ Rectangle {
     // Store winning positions to draw lines
     property var winningPositions: []
     property int lastWinAmount: 0
+    property bool showLinePatterns: false
+    property int currentLines: engine ? engine.lines : 1
     
     function getSlotPosition(r, c) {
         var slots = [[r0c0, r0c1, r0c2, r0c3, r0c4],
@@ -17,8 +19,24 @@ Rectangle {
         return Qt.point(slot.x + slot.width/2, slot.y + slot.height/2)
     }
     
+    // Timer to hide line patterns after showing them
+    Timer {
+        id: linePatternTimer
+        interval: 3000
+        onTriggered: showLinePatterns = false
+    }
+    
     Connections {
         target: engine
+        
+        // Show line patterns when lines change
+        function onSelectedLinesChanged(count) {
+            currentLines = count
+            showLinePatterns = true
+            linePatternsCanvas.requestPaint()
+            linePatternTimer.restart()
+        }
+        
         // update items from engine
         function onSlotsSpinned() {
             if (!engine) return
@@ -76,6 +94,9 @@ Rectangle {
         function onSpinStarted() {
             winningPositions = []
             winLineCanvas.requestPaint()
+            showLinePatterns = false
+            linePatternsCanvas.requestPaint()
+            linePatternTimer.stop()
             winAmountDisplay.hide()
             
             r0c0.itemcolor = "#dedede"
@@ -257,6 +278,80 @@ Rectangle {
         anchors.bottomMargin: 10
         color: "#020202"
 
+        // Canvas for drawing active line patterns
+        Canvas {
+            id: linePatternsCanvas
+            anchors.fill: parent
+            z: 9
+            opacity: showLinePatterns ? 0.8 : 0
+            
+            Behavior on opacity {
+                NumberAnimation { duration: 300 }
+            }
+            
+            function drawLine(ctx, pattern, color, lineNum) {
+                ctx.strokeStyle = color
+                ctx.lineWidth = 3
+                ctx.lineCap = "round"
+                ctx.shadowColor = color
+                ctx.shadowBlur = 8
+                
+                ctx.beginPath()
+                var firstPos = getSlotPosition(pattern[0][0], pattern[0][1])
+                ctx.moveTo(firstPos.x, firstPos.y)
+                
+                for(var i = 1; i < pattern.length; i++) {
+                    var pos = getSlotPosition(pattern[i][0], pattern[i][1])
+                    ctx.lineTo(pos.x, pos.y)
+                }
+                
+                ctx.stroke()
+                
+                // Draw line number at the start
+                ctx.fillStyle = color
+                ctx.font = "bold 14px sans-serif"
+                ctx.shadowBlur = 4
+                ctx.fillText(lineNum.toString(), firstPos.x - 25, firstPos.y + 5)
+            }
+            
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+                
+                if(!showLinePatterns || currentLines <= 0) return
+                
+                // Define all 9 line patterns (row, col)
+                var linePatterns = [
+                    [[1,0], [1,1], [1,2], [1,3], [1,4]], // Line 1: Middle row
+                    [[0,0], [0,1], [0,2], [0,3], [0,4]], // Line 2: Top row
+                    [[2,0], [2,1], [2,2], [2,3], [2,4]], // Line 3: Bottom row
+                    [[1,0], [1,1], [2,2], [1,3], [1,4]], // Line 4: V shape
+                    [[1,0], [1,1], [0,2], [1,3], [1,4]], // Line 5: ^ shape
+                    [[0,0], [0,1], [1,2], [0,3], [0,4]], // Line 6: Top with dip
+                    [[2,0], [2,1], [1,2], [2,3], [2,4]], // Line 7: Bottom with bump
+                    [[0,0], [1,1], [0,2], [1,3], [0,4]], // Line 8: Zigzag top
+                    [[2,0], [1,1], [2,2], [1,3], [2,4]]  // Line 9: Zigzag bottom
+                ]
+                
+                var colors = [
+                    "#FF4444", // Red
+                    "#44FF44", // Green
+                    "#4444FF", // Blue
+                    "#FFFF44", // Yellow
+                    "#FF44FF", // Magenta
+                    "#44FFFF", // Cyan
+                    "#FF8844", // Orange
+                    "#88FF44", // Lime
+                    "#FF4488"  // Pink
+                ]
+                
+                // Draw lines based on current line count
+                for(var i = 0; i < Math.min(currentLines, linePatterns.length); i++) {
+                    drawLine(ctx, linePatterns[i], colors[i], i + 1)
+                }
+            }
+        }
+        
         // Canvas for drawing winning lines
         Canvas {
             id: winLineCanvas
@@ -622,7 +717,7 @@ Rectangle {
                                     hoverEnabled: true
                                     onClicked: {
                                         if (engine) {
-                                            engine.lines = Math.min(5, engine.lines + 1)
+                                            engine.lines = Math.min(9, engine.lines + 1)
                                         }
                                     }
                                 }

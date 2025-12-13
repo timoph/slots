@@ -27,9 +27,9 @@ GameEngine::GameEngine(QObject *parent) :
         QList<int> list;
         for(int j = 0; j < 5; j++) {
 #if QT_VERSION_MAJOR < 6
-            list.append(qrand() % 5 + 1);
+            list.append(qrand() % 9 + 1);
 #else
-            list.append(QRandomGenerator::global()->bounded(1, 6));
+            list.append(QRandomGenerator::global()->bounded(1, 10));
 #endif
         }
         m_visibleRows.append(list);
@@ -39,6 +39,9 @@ GameEngine::GameEngine(QObject *parent) :
 #if QT_VERSION_MAJOR < 6
     qsrand(QDateTime::currentMSecsSinceEpoch());
 #endif
+    
+    // Emit initial values to QML
+    QTimer::singleShot(0, this, SIGNAL(slotsSpinned()));
 }
 
 int GameEngine::itemForPlace(const int row, const int column)
@@ -91,9 +94,9 @@ void GameEngine::shuffle()
             QList<int> list;
             for(int j = 0; j < 5; j++) {
 #if QT_VERSION_MAJOR < 6
-                list.append(qrand() % 5 + 1);
+                list.append(qrand() % 9 + 1);
 #else
-                list.append(QRandomGenerator::global()->bounded(1, 6));
+                list.append(QRandomGenerator::global()->bounded(1, 10));
 #endif
             }
             m_visibleRows.append(list);
@@ -107,9 +110,9 @@ void GameEngine::shuffle()
                 else if(j == 2 && m_shuffleCount > 11) continue;
                 else if(j == 3 && m_shuffleCount > 13) continue;
 #if QT_VERSION_MAJOR < 6
-                m_visibleRows[i][j] = qrand() % 5 + 1;
+                m_visibleRows[i][j] = qrand() % 9 + 1;
 #else
-                m_visibleRows[i][j] = QRandomGenerator::global()->bounded(1, 6);
+                m_visibleRows[i][j] = QRandomGenerator::global()->bounded(1, 10);
 #endif
             }
         }
@@ -138,14 +141,14 @@ void GameEngine::shuffle()
                 }
             }
             
-            // If more than one bonus in this column, replace extras with random symbols (2-5)
+            // If more than one bonus in this column, replace extras with random symbols (2-9)
             if(bonusCount > 1) {
                 for(int row = 0; row < 3; row++) {
                     if(m_visibleRows.at(row).at(col) == 1 && row != bonusRow) {
 #if QT_VERSION_MAJOR < 6
-                        m_visibleRows[row][col] = qrand() % 4 + 2; // Random value 2-5
+                        m_visibleRows[row][col] = qrand() % 8 + 2; // Random value 2-9
 #else
-                        m_visibleRows[row][col] = QRandomGenerator::global()->bounded(2, 6); // Random value 2-5
+                        m_visibleRows[row][col] = QRandomGenerator::global()->bounded(2, 10); // Random value 2-9
 #endif
                     }
                 }
@@ -458,14 +461,36 @@ void GameEngine::checkLines()
 void GameEngine::populatePayTable()
 {
     //TODO: make this saner
-    for(int i = 0; i < 8; i++) {
+    // Create pay table for symbols 0-9
+    for(int i = 0; i < 10; i++) {
         QList<int> list;
         for(int j = 0; j < 5; j++) {
             if(j == 0 || j == 1) {
                 list.append(0);
             }
             else {
-                list.append(j == 4 ? (j + 1) * 4 : (j + 1) * 2);
+                // Values 2-5 are pictures (higher payouts)
+                if(i >= 2 && i <= 5) {
+                    list.append(j == 4 ? (j + 1) * 4 : (j + 1) * 2);
+                }
+                // Value 1 is bonus (no regular payout)
+                else if(i == 1) {
+                    list.append(0);
+                }
+                // Values 6-9 are numbers (lower payouts)
+                else if(i >= 6 && i <= 9) {
+                    // Number payouts: 6=1 (smallest), 7=2, 8=5, 9=7 (best number)
+                    int numberValue = 0;
+                    if(i == 6) numberValue = 1;      // 1
+                    else if(i == 7) numberValue = 2; // 2
+                    else if(i == 8) numberValue = 3; // 5
+                    else if(i == 9) numberValue = 4; // 7
+                    
+                    list.append(j == 4 ? (j + 1) * numberValue : (j + 1) * (numberValue > 0 ? numberValue : 1));
+                }
+                else {
+                    list.append(j == 4 ? (j + 1) * 4 : (j + 1) * 2);
+                }
             }
         }
         m_payTable.append(list);

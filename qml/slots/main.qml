@@ -353,8 +353,8 @@ Rectangle {
         
         Rectangle {
             anchors.centerIn: parent
-            width: bonusText.width + 100
-            height: bonusText.height + 60
+            width: bonusText.width + 60
+            height: bonusText.height + 40
             color: "#60000000"
             border.color: "#FF44FF"
             border.width: 4
@@ -373,14 +373,14 @@ Rectangle {
         Column {
             id: bonusText
             anchors.centerIn: parent
-            spacing: 10
+            spacing: 5
             scale: 1.0
             
             Text {
                 text: "★ BONUS! ★"
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#FF44FF"
-                font.pixelSize: 48
+                font.pixelSize: 32
                 font.bold: true
                 style: Text.Outline
                 styleColor: "#000000"
@@ -390,7 +390,7 @@ Rectangle {
                 text: bonusDisplay.bonusSpins + " FREE SPINS!"
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#FFD700"
-                font.pixelSize: 36
+                font.pixelSize: 24
                 font.bold: true
                 style: Text.Outline
                 styleColor: "#000000"
@@ -457,8 +457,8 @@ Rectangle {
         
         Rectangle {
             anchors.centerIn: parent
-            width: completeText.width + 100
-            height: completeText.height + 60
+            width: completeText.width + 60
+            height: completeText.height + 40
             color: "#60000000"
             border.color: "#44FF44"
             border.width: 4
@@ -477,24 +477,24 @@ Rectangle {
         Column {
             id: completeText
             anchors.centerIn: parent
-            spacing: 15
+            spacing: 8
             scale: 1.0
             
             Text {
                 text: "FREE SPINS COMPLETE!"
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#44FF44"
-                font.pixelSize: 38
+                font.pixelSize: 24
                 font.bold: true
                 style: Text.Outline
                 styleColor: "#000000"
             }
             
             Text {
-                text: "Total Won: " + freeSpinsCompleteDisplay.totalWon
+                text: "Won: " + freeSpinsCompleteDisplay.totalWon
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#FFD700"
-                font.pixelSize: 42
+                font.pixelSize: 32
                 font.bold: true
                 style: Text.Outline
                 styleColor: "#000000"

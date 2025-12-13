@@ -3,7 +3,7 @@
 import QtQuick 2.3
 
 Rectangle {
-    property int value: 0
+    property int value: 2
     property color itemcolor: "#dedede"
     property bool isSpinning: false
     
@@ -32,12 +32,12 @@ Rectangle {
         // Main visible image
         Image {
             id: mainImage
-            source: "image://images/" + value
+            source: (value >= 2 && value <= 5) ? "image://images/" + value : ""
             width: parent.width
             height: parent.height
             smooth: true
             y: 0
-            visible: value !== 1
+            visible: value >= 2 && value <= 5
         }
         
         // BONUS text for value 1
@@ -71,10 +71,43 @@ Rectangle {
             }
         }
         
-        // Rolling images that appear during spin
+        // Number symbols (6=1, 7=2, 8=5, 9=7)
+        Rectangle {
+            id: numberRect
+            width: parent.width
+            height: parent.height
+            y: 0
+            visible: (value >= 6 && value <= 9) && !isSpinning
+            color: "#1a1a1a"
+            border.color: "#888888"
+            border.width: 1
+            radius: 4
+            
+            Text {
+                anchors.centerIn: parent
+                text: {
+                    if (value === 6) return "1"
+                    if (value === 7) return "2"
+                    if (value === 8) return "5"
+                    if (value === 9) return "7"
+                    return ""
+                }
+                color: {
+                    if (value === 6) return "#999999"  // 1 - harmaa
+                    if (value === 7) return "#888888"  // 2 - tummempi harmaa
+                    if (value === 8) return "#AAAAAA"  // 5 - vaaleampi
+                    if (value === 9) return "#CCCCCC"  // 7 - vaalein
+                    return "#FFFFFF"
+                }
+                font.pixelSize: 32
+                font.bold: true
+            }
+        }
+        
+        // Rolling images that appear during spin (only use picture values 2-5)
         Image {
             id: rollingImage1
-            source: "image://images/" + ((value + 1) % 5 + 1)
+            source: "image://images/" + (2 + (Math.floor(Math.random() * 4)))
             width: parent.width
             height: parent.height
             smooth: true
@@ -84,7 +117,7 @@ Rectangle {
         
         Image {
             id: rollingImage2
-            source: "image://images/" + ((value + 2) % 5 + 1)
+            source: "image://images/" + (2 + (Math.floor(Math.random() * 4)))
             width: parent.width
             height: parent.height
             smooth: true
@@ -94,7 +127,7 @@ Rectangle {
         
         Image {
             id: rollingImage3
-            source: "image://images/" + ((value + 3) % 5 + 1)
+            source: "image://images/" + (2 + (Math.floor(Math.random() * 4)))
             width: parent.width
             height: parent.height
             smooth: true
@@ -140,9 +173,12 @@ Rectangle {
     // Handle value changes to update display
     onValueChanged: {
         if (!isSpinning) {
-            mainImage.source = "image://images/" + value
+            if (value >= 2 && value <= 5) {
+                mainImage.source = "image://images/" + value
+            }
             mainImage.y = 0
             bonusRect.y = 0
+            numberRect.y = 0
         }
     }
     
@@ -155,9 +191,12 @@ Rectangle {
     function stopRolling() {
         isSpinning = false
         rollAnimation.stop()
-        mainImage.source = "image://images/" + value
+        if (value >= 2 && value <= 5) {
+            mainImage.source = "image://images/" + value
+        }
         mainImage.y = 0
         bonusRect.y = 0
+        numberRect.y = 0
         rollingImage1.y = -mainImage.height
         rollingImage2.y = -mainImage.height * 2
         rollingImage3.y = -mainImage.height * 3

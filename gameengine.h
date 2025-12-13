@@ -11,6 +11,7 @@ class GameEngine : public QObject
     Q_PROPERTY(int credits READ credits WRITE setCredits NOTIFY creditsChanged)
     Q_PROPERTY(QString message READ message WRITE setMessage NOTIFY messageChanged)
     Q_PROPERTY(bool playable READ isPlayable WRITE setPlayable NOTIFY playableChanged)
+    Q_PROPERTY(int freeSpins READ freeSpins WRITE setFreeSpins NOTIFY freeSpinsChanged)
 
 public:
     explicit GameEngine(QObject *parent = 0);
@@ -18,6 +19,7 @@ public:
     int selectedLines() const;
     int credits() const;
     bool isPlayable() const;
+    int freeSpins() const;
     Q_INVOKABLE int itemForPlace(const int row, const int  column);
     QString message() const;
 
@@ -32,6 +34,9 @@ signals:
     void playableChanged(bool is);
     void winningSlot(const int r, const int c);
     void spinStarted();
+    void bonusTriggered(int spins);
+    void freeSpinsChanged(int remaining);
+    void freeSpinsComplete(int totalWon);
     
 public slots:
     void setBet(const int bet);
@@ -40,10 +45,13 @@ public slots:
     void spin();
     void setMessage(const QString &msg);
     void setPlayable(bool is);
+    void setFreeSpins(const int spins);
 
 private slots:
     void checkLines();
     void shuffle();
+    void checkBonuses();
+    void playFreeSpinRound();
 //    void check1line();
 //    void check2line();
 //    void check3line();
@@ -70,6 +78,10 @@ private:
     QString m_message;
     QList< QList<int> > m_visibleRows;
     QList< QList<int> > m_payTable;
+    int m_freeSpins;
+    int m_freeSpinsTotal;
+    bool m_inFreeSpins;
+    int m_freeSpinsTotalWon;
 };
 
 #endif // GAMEENGINE_H

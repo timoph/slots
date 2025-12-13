@@ -187,6 +187,16 @@ Rectangle {
             r2c3.itemcolor = "#dedede"
             r2c4.itemcolor = "#dedede"
         }
+        
+        function onBonusTriggered(spins) {
+            console.log("BONUS TRIGGERED:", spins, "free spins")
+            bonusDisplay.showBonus(spins)
+        }
+        
+        function onFreeSpinsComplete(totalWon) {
+            console.log("FREE SPINS COMPLETE, won:", totalWon)
+            freeSpinsCompleteDisplay.show(totalWon)
+        }
     }
 
     width: 480
@@ -239,6 +249,264 @@ Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: 5
+    }
+    
+    // Free Spins Counter
+    Rectangle {
+        id: freeSpinsCounter
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.margins: 10
+        width: 120
+        height: 40
+        color: "#1a1a1a"
+        border.color: "#FF44FF"
+        border.width: 2
+        radius: 8
+        visible: engine && engine.freeSpins > 0
+        
+        Column {
+            anchors.centerIn: parent
+            spacing: 2
+            
+            Text {
+                text: "FREE SPINS"
+                color: "#FF44FF"
+                font.pixelSize: 9
+                font.bold: true
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+            
+            Text {
+                text: engine ? engine.freeSpins : "0"
+                color: "#FFD700"
+                font.pixelSize: 20
+                font.bold: true
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+        }
+        
+        SequentialAnimation on border.width {
+            running: freeSpinsCounter.visible
+            loops: Animation.Infinite
+            NumberAnimation { to: 4; duration: 500; easing.type: Easing.InOutQuad }
+            NumberAnimation { to: 2; duration: 500; easing.type: Easing.InOutQuad }
+        }
+    }
+    
+    // Bonus triggered display
+    Item {
+        id: bonusDisplay
+        anchors.centerIn: parent
+        width: parent.width
+        height: parent.height
+        opacity: 0
+        z: 101
+        
+        property int bonusSpins: 0
+        
+        function showBonus(spins) {
+            bonusSpins = spins
+            opacity = 1
+            bonusAnimation.restart()
+        }
+        
+        SequentialAnimation {
+            id: bonusAnimation
+            ParallelAnimation {
+                NumberAnimation {
+                    target: bonusText
+                    property: "scale"
+                    from: 0.3
+                    to: 1.8
+                    duration: 600
+                    easing.type: Easing.OutElastic
+                }
+                NumberAnimation {
+                    target: bonusText
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: 400
+                }
+            }
+            PauseAnimation { duration: 1500 }
+            ParallelAnimation {
+                NumberAnimation {
+                    target: bonusText
+                    property: "scale"
+                    to: 0.3
+                    duration: 400
+                    easing.type: Easing.InBack
+                }
+                NumberAnimation {
+                    target: bonusText
+                    property: "opacity"
+                    to: 0
+                    duration: 400
+                }
+            }
+            ScriptAction {
+                script: bonusDisplay.opacity = 0
+            }
+        }
+        
+        Rectangle {
+            anchors.centerIn: parent
+            width: bonusText.width + 100
+            height: bonusText.height + 60
+            color: "#60000000"
+            border.color: "#FF44FF"
+            border.width: 4
+            radius: 20
+            opacity: bonusText.opacity
+            scale: bonusText.scale * 0.95
+            
+            SequentialAnimation on border.color {
+                running: bonusDisplay.opacity > 0
+                loops: Animation.Infinite
+                ColorAnimation { to: "#FF88FF"; duration: 400 }
+                ColorAnimation { to: "#FF44FF"; duration: 400 }
+            }
+        }
+        
+        Column {
+            id: bonusText
+            anchors.centerIn: parent
+            spacing: 10
+            scale: 1.0
+            
+            Text {
+                text: "★ BONUS! ★"
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#FF44FF"
+                font.pixelSize: 48
+                font.bold: true
+                style: Text.Outline
+                styleColor: "#000000"
+            }
+            
+            Text {
+                text: bonusDisplay.bonusSpins + " FREE SPINS!"
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#FFD700"
+                font.pixelSize: 36
+                font.bold: true
+                style: Text.Outline
+                styleColor: "#000000"
+            }
+        }
+    }
+    
+    // Free Spins Complete display
+    Item {
+        id: freeSpinsCompleteDisplay
+        anchors.centerIn: parent
+        width: parent.width
+        height: parent.height
+        opacity: 0
+        z: 101
+        
+        property int totalWon: 0
+        
+        function show(won) {
+            totalWon = won
+            opacity = 1
+            completeAnimation.restart()
+        }
+        
+        SequentialAnimation {
+            id: completeAnimation
+            ParallelAnimation {
+                NumberAnimation {
+                    target: completeText
+                    property: "scale"
+                    from: 0.5
+                    to: 1.5
+                    duration: 500
+                    easing.type: Easing.OutBack
+                }
+                NumberAnimation {
+                    target: completeText
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: 400
+                }
+            }
+            PauseAnimation { duration: 2500 }
+            ParallelAnimation {
+                NumberAnimation {
+                    target: completeText
+                    property: "scale"
+                    to: 2.0
+                    duration: 500
+                    easing.type: Easing.InBack
+                }
+                NumberAnimation {
+                    target: completeText
+                    property: "opacity"
+                    to: 0
+                    duration: 500
+                }
+            }
+            ScriptAction {
+                script: freeSpinsCompleteDisplay.opacity = 0
+            }
+        }
+        
+        Rectangle {
+            anchors.centerIn: parent
+            width: completeText.width + 100
+            height: completeText.height + 60
+            color: "#60000000"
+            border.color: "#44FF44"
+            border.width: 4
+            radius: 20
+            opacity: completeText.opacity
+            scale: completeText.scale * 0.95
+            
+            SequentialAnimation on border.width {
+                running: freeSpinsCompleteDisplay.opacity > 0
+                loops: Animation.Infinite
+                NumberAnimation { to: 6; duration: 500; easing.type: Easing.InOutQuad }
+                NumberAnimation { to: 4; duration: 500; easing.type: Easing.InOutQuad }
+            }
+        }
+        
+        Column {
+            id: completeText
+            anchors.centerIn: parent
+            spacing: 15
+            scale: 1.0
+            
+            Text {
+                text: "FREE SPINS COMPLETE!"
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#44FF44"
+                font.pixelSize: 38
+                font.bold: true
+                style: Text.Outline
+                styleColor: "#000000"
+            }
+            
+            Text {
+                text: "Total Won: " + freeSpinsCompleteDisplay.totalWon
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#FFD700"
+                font.pixelSize: 42
+                font.bold: true
+                style: Text.Outline
+                styleColor: "#000000"
+                
+                SequentialAnimation on scale {
+                    running: freeSpinsCompleteDisplay.opacity > 0
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 1.1; duration: 400; easing.type: Easing.InOutQuad }
+                    NumberAnimation { to: 1.0; duration: 400; easing.type: Easing.InOutQuad }
+                }
+            }
+        }
     }
     
     // Flashy win amount display

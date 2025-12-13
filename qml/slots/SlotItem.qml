@@ -37,6 +37,38 @@ Rectangle {
             height: parent.height
             smooth: true
             y: 0
+            visible: value !== 1
+        }
+        
+        // BONUS text for value 1
+        Rectangle {
+            id: bonusRect
+            width: parent.width
+            height: parent.height
+            y: 0
+            visible: value === 1 && !isSpinning
+            color: "#2a0a2a"
+            border.color: "#FF44FF"
+            border.width: 2
+            radius: 6
+            
+            Text {
+                anchors.centerIn: parent
+                text: "BONUS"
+                color: "#FFD700"
+                font.pixelSize: 16
+                font.bold: true
+                rotation: -15
+                style: Text.Outline
+                styleColor: "#FF44FF"
+            }
+            
+            SequentialAnimation on border.color {
+                running: bonusRect.visible
+                loops: Animation.Infinite
+                ColorAnimation { to: "#FF88FF"; duration: 400 }
+                ColorAnimation { to: "#FF44FF"; duration: 400 }
+            }
         }
         
         // Rolling images that appear during spin
@@ -110,6 +142,7 @@ Rectangle {
         if (!isSpinning) {
             mainImage.source = "image://images/" + value
             mainImage.y = 0
+            bonusRect.y = 0
         }
     }
     
@@ -124,6 +157,7 @@ Rectangle {
         rollAnimation.stop()
         mainImage.source = "image://images/" + value
         mainImage.y = 0
+        bonusRect.y = 0
         rollingImage1.y = -mainImage.height
         rollingImage2.y = -mainImage.height * 2
         rollingImage3.y = -mainImage.height * 3

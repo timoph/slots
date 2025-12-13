@@ -18,6 +18,10 @@ GameEngine::GameEngine(QObject *parent) :
     m_message = "";
     m_isPlayable = true;
     m_shuffleCount = 0;
+    m_freeSpins = 0;
+    m_freeSpinsTotal = 0;
+    m_inFreeSpins = false;
+    m_freeSpinsTotalWon = 0;
 
     for(int i = 0; i < 3; i++) {
         QList<int> list;
@@ -51,6 +55,11 @@ int GameEngine::itemForPlace(const int row, const int column)
 void GameEngine::spin()
 {
     qDebug() << __PRETTY_FUNCTION__;
+
+    // Don't allow manual spins during free spins
+    if(m_inFreeSpins) {
+        return;
+    }
 
     setMessage("");
     setPlayable(false);
@@ -106,22 +115,44 @@ void GameEngine::shuffle()
         }
     }
 
-    emit slotsSpinned();
-
-//        QString debugString;
-//        for(int i = 0; i < 3; i++) {
-//            for(int j = 0; j < 5; j++) {
-//                debugString += QString(" %1 ").arg(m_visibleRows.at(i).at(j));
-//            }
-//            debugString += "\n";
-//        }
-//        qDebug() << debugString;
-
     if(m_shuffleCount < 15) {
+        emit slotsSpinned();
         QTimer::singleShot(20 * m_shuffleCount, this, SLOT(shuffle()));
     }
     else {
         m_shuffleCount = 0;
+        
+        // Ensure only one bonus per reel (column)
+        // Bonus symbol is value 1
+        for(int col = 0; col < 5; col++) {
+            int bonusCount = 0;
+            int bonusRow = -1;
+            
+            // Count bonuses in this column
+            for(int row = 0; row < 3; row++) {
+                if(m_visibleRows.at(row).at(col) == 1) {
+                    bonusCount++;
+                    if(bonusRow == -1) {
+                        bonusRow = row;
+                    }
+                }
+            }
+            
+            // If more than one bonus in this column, replace extras with random symbols (2-5)
+            if(bonusCount > 1) {
+                for(int row = 0; row < 3; row++) {
+                    if(m_visibleRows.at(row).at(col) == 1 && row != bonusRow) {
+#if QT_VERSION_MAJOR < 6
+                        m_visibleRows[row][col] = qrand() % 4 + 2; // Random value 2-5
+#else
+                        m_visibleRows[row][col] = QRandomGenerator::global()->bounded(2, 6); // Random value 2-5
+#endif
+                    }
+                }
+            }
+        }
+        
+        emit slotsSpinned();
         checkLines();
     }
 }
@@ -189,6 +220,19 @@ void GameEngine::setMessage(const QString &msg)
     if(msg != m_message) {
         m_message = msg;
         emit messageChanged(m_message);
+    }
+}
+
+int GameEngine::freeSpins() const
+{
+    return m_freeSpins;
+}
+
+void GameEngine::setFreeSpins(const int spins)
+{
+    if(spins != m_freeSpins) {
+        m_freeSpins = spins;
+        emit freeSpinsChanged(m_freeSpins);
     }
 }
 
@@ -395,9 +439,18 @@ void GameEngine::checkLines()
     qDebug() << QString("Won %1").arg(winnings);
     if(winnings > 0) {
         setCredits(m_credits + winnings * m_bet);
+        
+        // Track free spins winnings
+        if(m_inFreeSpins) {
+            m_freeSpinsTotalWon += winnings * m_bet;
+        }
+        
         setMessage(QString("You won %1 credits! yay!").arg(winnings * m_bet));
         emit win(winnings);
     }
+
+    // Check for bonuses
+    checkBonuses();
 
     setPlayable(true);
 }
@@ -427,4 +480,75 @@ void GameEngine::populatePayTable()
 //        tableContents += "\n";
 //    }
 //    qDebug() << tableContents;
+}
+
+void GameEngine::checkBonuses()
+{
+    // Count how many reels (columns) have at least one bonus symbol
+    // Bonus symbol is value 1
+    
+    int bonusReelsCount = 0;
+    
+    // Check each reel/column
+    for(int col = 0; col < 5; col++) {
+        bool hasBonus = false;
+        // Check all rows in this column
+        for(int row = 0; row < 3; row++) {
+            if(m_visibleRows.at(row).at(col) == 1) {
+                hasBonus = true;
+                break;
+            }
+        }
+        if(hasBonus) {
+            bonusReelsCount++;
+        }
+    }
+    
+    qDebug() << QString("Found bonus in %1 reels").arg(bonusReelsCount);
+    
+    if(bonusReelsCount >= 3 && !m_inFreeSpins) {
+        int spinsAwarded = 0;
+        if(bonusReelsCount == 3) spinsAwarded = 5;
+        else if(bonusReelsCount == 4) spinsAwarded = 10;
+        else if(bonusReelsCount >= 5) spinsAwarded = 15;
+        
+        qDebug() << QString("BONUS! Awarded %1 free spins").arg(spinsAwarded);
+        
+        m_freeSpins = spinsAwarded;
+        m_freeSpinsTotal = spinsAwarded;
+        m_inFreeSpins = true;
+        m_freeSpinsTotalWon = 0;
+        
+        emit bonusTriggered(spinsAwarded);
+        emit freeSpinsChanged(m_freeSpins);
+        
+        setMessage(QString("BONUS! %1 FREE SPINS!").arg(spinsAwarded));
+        
+        // Start free spins after a short delay
+        QTimer::singleShot(2000, this, SLOT(playFreeSpinRound()));
+    }
+    else if(m_inFreeSpins && m_freeSpins > 0) {
+        // Continue free spins
+        QTimer::singleShot(1500, this, SLOT(playFreeSpinRound()));
+    }
+    else if(m_inFreeSpins && m_freeSpins == 0) {
+        // Free spins complete
+        m_inFreeSpins = false;
+        emit freeSpinsComplete(m_freeSpinsTotalWon);
+        setMessage(QString("Free spins complete! Won %1 total!").arg(m_freeSpinsTotalWon));
+    }
+}
+
+void GameEngine::playFreeSpinRound()
+{
+    if(m_freeSpins > 0 && m_inFreeSpins) {
+        m_freeSpins--;
+        emit freeSpinsChanged(m_freeSpins);
+        
+        setMessage(QString("Free spin %1/%2").arg(m_freeSpinsTotal - m_freeSpins).arg(m_freeSpinsTotal));
+        
+        // Play a spin without deducting credits
+        emit spinStarted();
+        shuffle();
+    }
 }

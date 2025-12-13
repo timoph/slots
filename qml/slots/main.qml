@@ -730,6 +730,11 @@ Rectangle {
                     border.width: 2
                     radius: 4
                     
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: addCreditsDialog.visible = true
+                    }
+
                     Text {
                         id: creditsText
                         text: engine ? engine.credits : "0"
@@ -1055,6 +1060,140 @@ Rectangle {
                         onClicked: {
                             if (engine) engine.spin()
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    // Add Credits Dialog
+    Rectangle {
+        id: addCreditsDialog
+        anchors.fill: parent
+        color: "#aa000000"
+        visible: false
+        z: 100
+        
+        MouseArea {
+            anchors.fill: parent
+            onClicked: addCreditsDialog.visible = false
+        }
+        
+        Rectangle {
+            width: 350
+            height: 200
+            anchors.centerIn: parent
+            color: "#2a2a2a"
+            border.color: "#FFD700"
+            border.width: 2
+            radius: 10
+            
+            Column {
+                anchors.centerIn: parent
+                spacing: 20
+                
+                Text {
+                    text: "ADD CREDITS"
+                    color: "#FFD700"
+                    font.pixelSize: 24
+                    font.bold: true
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+                
+                Row {
+                    spacing: 15
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    
+                    // 100 Button
+                    Rectangle {
+                        width: 80
+                        height: 40
+                        color: "#444"
+                        radius: 5
+                        border.color: "#888"
+                        
+                        Text {
+                            text: "100"
+                            color: "white"
+                            anchors.centerIn: parent
+                            font.bold: true
+                        }
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                engine.credits += 100
+                                addCreditsDialog.visible = false
+                            }
+                        }
+                    }
+                    
+                    // 500 Button
+                    Rectangle {
+                        width: 80
+                        height: 40
+                        color: "#444"
+                        radius: 5
+                        border.color: "#888"
+                        
+                        Text {
+                            text: "500"
+                            color: "white"
+                            anchors.centerIn: parent
+                            font.bold: true
+                        }
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                engine.credits += 500
+                                addCreditsDialog.visible = false
+                            }
+                        }
+                    }
+                    
+                    // 1000 Button
+                    Rectangle {
+                        width: 80
+                        height: 40
+                        color: "#444"
+                        radius: 5
+                        border.color: "#888"
+                        
+                        Text {
+                            text: "1000"
+                            color: "white"
+                            anchors.centerIn: parent
+                            font.bold: true
+                        }
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                engine.credits += 1000
+                                addCreditsDialog.visible = false
+                            }
+                        }
+                    }
+                }
+                
+                Rectangle {
+                    width: 100
+                    height: 30
+                    color: "#662222"
+                    radius: 5
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    
+                    Text {
+                        text: "CANCEL"
+                        color: "white"
+                        anchors.centerIn: parent
+                        font.pixelSize: 12
+                    }
+                    
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: addCreditsDialog.visible = false
                     }
                 }
             }

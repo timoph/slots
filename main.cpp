@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include <QQuickView>
 #include <QUrl>
+#include <QTimer>
 
 #include "gameengine.h"
 #include "imageprovider.h"
@@ -23,6 +24,12 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 
     QObject::connect(view->engine(), SIGNAL(quit()),
                      app.data(), SLOT(quit()));
+
+    // Check for test arguments
+    if (app->arguments().contains("--testspins")) {
+        // Use QTimer to trigger it after the event loop starts
+        QTimer::singleShot(1000, engine.data(), SLOT(triggerTestSpins()));
+    }
 
     return app->exec();
 }

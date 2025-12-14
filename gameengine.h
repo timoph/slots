@@ -47,6 +47,7 @@ public slots:
     void setMessage(const QString &msg);
     void setPlayable(bool is);
     void setFreeSpins(const int spins);
+    void triggerTestSpins();
 
 private slots:
     void checkLines();

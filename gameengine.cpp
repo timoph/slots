@@ -583,3 +583,22 @@ void GameEngine::playFreeSpinRound()
         shuffle();
     }
 }
+
+void GameEngine::triggerTestSpins()
+{
+    qDebug() << "Triggering TEST free spins";
+    int spinsAwarded = 5;
+    
+    m_freeSpins = spinsAwarded;
+    m_freeSpinsTotal = spinsAwarded;
+    m_inFreeSpins = true;
+    m_freeSpinsTotalWon = 0;
+    
+    emit bonusTriggered(spinsAwarded);
+    emit freeSpinsChanged(m_freeSpins);
+    
+    setMessage(QString("TEST MODE: %1 FREE SPINS!").arg(spinsAwarded));
+    
+    // Start free spins after a short delay
+    QTimer::singleShot(1000, this, SLOT(playFreeSpinRound()));
+}

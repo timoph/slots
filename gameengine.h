@@ -34,6 +34,7 @@ signals:
     void slotsSpinned();
     void playableChanged(bool is);
     void winningSlot(const int r, const int c);
+    void winningLine(const int lineId);
     void spinStarted();
     void bonusTriggered(int spins);
     void freeSpinsChanged(int remaining);

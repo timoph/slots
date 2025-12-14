@@ -377,6 +377,9 @@ void GameEngine::checkLines()
                 emit winningSlot(m_linePatterns[i][j][0], m_linePatterns[i][j][1]);
             }
             
+            // Emit winning line index (0-8)
+            emit winningLine(i);
+            
             // Calculate win amount
             // Paytable index: symbol (0-9), factor (0-4)
             // Note: factor 2 is for 3 matches, 3 for 4, 4 for 5.

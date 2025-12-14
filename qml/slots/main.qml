@@ -7,9 +7,22 @@ Rectangle {
     
     // Store winning positions to draw lines
     property var winningPositions: []
+    property var winningLines: []
     property int lastWinAmount: 0
     property bool showLinePatterns: false
     property int currentLines: engine ? engine.lines : 1
+    
+    property var linePatterns: [
+        [[1,0], [1,1], [1,2], [1,3], [1,4]], // Line 1: Middle row
+        [[0,0], [0,1], [0,2], [0,3], [0,4]], // Line 2: Top row
+        [[2,0], [2,1], [2,2], [2,3], [2,4]], // Line 3: Bottom row
+        [[1,0], [1,1], [2,2], [1,3], [1,4]], // Line 4: V shape
+        [[1,0], [1,1], [0,2], [1,3], [1,4]], // Line 5: ^ shape
+        [[0,0], [0,1], [1,2], [0,3], [0,4]], // Line 6: Top with dip
+        [[2,0], [2,1], [1,2], [2,3], [2,4]], // Line 7: Bottom with bump
+        [[0,0], [1,1], [0,2], [1,3], [0,4]], // Line 8: Zigzag top
+        [[2,0], [1,1], [2,2], [1,3], [2,4]]  // Line 9: Zigzag bottom
+    ]
     
     function getSlotPosition(r, c) {
         var slots = [[r0c0, r0c1, r0c2, r0c3, r0c4],
@@ -144,6 +157,12 @@ Rectangle {
             if(r === 2 && c === 4) r2c4.itemcolor = "#ef2020"
         }
 
+        function onWinningLine(lineId) {
+            console.log("WINNING LINE:", lineId)
+            winningLines.push(lineId)
+            winLineCanvas.requestPaint()
+        }
+
         function onWin(amount) {
             lastWinAmount = amount * (engine ? engine.bet : 1)
             winAmountDisplay.show()
@@ -151,6 +170,7 @@ Rectangle {
         
         function onSpinStarted() {
             winningPositions = []
+            winningLines = []
             winLineCanvas.requestPaint()
             showLinePatterns = false
             linePatternsCanvas.requestPaint()
@@ -610,24 +630,43 @@ Rectangle {
                 var ctx = getContext("2d")
                 ctx.clearRect(0, 0, width, height)
                 
-                if(winningPositions.length > 0) {
-                    // Draw line connecting all winning positions
-                    ctx.strokeStyle = "#FFD700"
-                    ctx.lineWidth = 4
+                if(winningLines.length > 0) {
+                    ctx.lineWidth = 5
                     ctx.lineCap = "round"
-                    ctx.shadowColor = "#FFD700"
                     ctx.shadowBlur = 10
                     
-                    ctx.beginPath()
-                    var firstPos = getSlotPosition(winningPositions[0].r, winningPositions[0].c)
-                    ctx.moveTo(firstPos.x, firstPos.y)
+                    var colors = [
+                        "#FF4444", // Red
+                        "#44FF44", // Green
+                        "#4444FF", // Blue
+                        "#FFFF44", // Yellow
+                        "#FF44FF", // Magenta
+                        "#44FFFF", // Cyan
+                        "#FF8844", // Orange
+                        "#88FF44", // Lime
+                        "#FF4488"  // Pink
+                    ]
                     
-                    for(var i = 1; i < winningPositions.length; i++) {
-                        var pos = getSlotPosition(winningPositions[i].r, winningPositions[i].c)
-                        ctx.lineTo(pos.x, pos.y)
+                    for (var i = 0; i < winningLines.length; i++) {
+                        var lineIdx = winningLines[i]
+                        if (lineIdx >= 0 && lineIdx < linePatterns.length) {
+                            var pattern = linePatterns[lineIdx]
+                            var color = colors[lineIdx] || "#FFD700"
+                            
+                            ctx.strokeStyle = color
+                            ctx.shadowColor = color
+                            
+                            ctx.beginPath()
+                            var firstPos = getSlotPosition(pattern[0][0], pattern[0][1])
+                            ctx.moveTo(firstPos.x, firstPos.y)
+                            
+                            for(var j = 1; j < pattern.length; j++) {
+                                var pos = getSlotPosition(pattern[j][0], pattern[j][1])
+                                ctx.lineTo(pos.x, pos.y)
+                            }
+                            ctx.stroke()
+                        }
                     }
-                    
-                    ctx.stroke()
                 }
             }
         }

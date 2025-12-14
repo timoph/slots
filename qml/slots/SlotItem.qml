@@ -103,6 +103,36 @@ Rectangle {
                 font.bold: true
             }
         }
+
+        // WILD symbol (value 0)
+        Rectangle {
+            id: wildRect
+            width: parent.width
+            height: parent.height
+            y: 0
+            visible: value === 0 && !isSpinning
+            color: "#330000"
+            border.color: "#FF0000"
+            border.width: 3
+            radius: 8
+            
+            Text {
+                anchors.centerIn: parent
+                text: "WILD"
+                color: "#FFFFFF"
+                font.pixelSize: 20
+                font.bold: true
+                style: Text.Outline
+                styleColor: "#FF0000"
+            }
+            
+            SequentialAnimation on color {
+                running: wildRect.visible
+                loops: Animation.Infinite
+                ColorAnimation { to: "#550000"; duration: 500 }
+                ColorAnimation { to: "#330000"; duration: 500 }
+            }
+        }
         
         // Rolling images that appear during spin (only use picture values 2-5)
         Image {

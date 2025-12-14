@@ -2,6 +2,7 @@
 #define GAMEENGINE_H
 
 #include <QObject>
+#include <QPoint>
 
 class GameEngine : public QObject
 {
@@ -67,6 +68,7 @@ private:
     void populatePayTable();
     int generateRandomSymbol();
     void ensureValidBoard();
+    void updateStickyWilds();
 
 // private variables
 private:
@@ -84,6 +86,9 @@ private:
     int m_freeSpinsTotal;
     bool m_inFreeSpins;
     int m_freeSpinsTotalWon;
+    QList<QPoint> m_stickyWilds;
+    
+    static const int m_linePatterns[9][5][2];
 };
 
 #endif // GAMEENGINE_H

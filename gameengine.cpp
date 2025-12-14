@@ -7,6 +7,18 @@
 #include <QRandomGenerator>
 #endif
 
+const int GameEngine::m_linePatterns[9][5][2] = {
+    {{1,0}, {1,1}, {1,2}, {1,3}, {1,4}}, // Line 1: Middle row
+    {{0,0}, {0,1}, {0,2}, {0,3}, {0,4}}, // Line 2: Top row
+    {{2,0}, {2,1}, {2,2}, {2,3}, {2,4}}, // Line 3: Bottom row
+    {{1,0}, {1,1}, {2,2}, {1,3}, {1,4}}, // Line 4: V shape
+    {{1,0}, {1,1}, {0,2}, {1,3}, {1,4}}, // Line 5: ^ shape
+    {{0,0}, {0,1}, {1,2}, {0,3}, {0,4}}, // Line 6: Top with dip
+    {{2,0}, {2,1}, {1,2}, {2,3}, {2,4}}, // Line 7: Bottom with bump
+    {{0,0}, {1,1}, {0,2}, {1,3}, {0,4}}, // Line 8: Zigzag top
+    {{2,0}, {1,1}, {2,2}, {1,3}, {2,4}}  // Line 9: Zigzag bottom
+};
+
 GameEngine::GameEngine(QObject *parent) :
     QObject(parent)
 {
@@ -86,6 +98,7 @@ void GameEngine::spin()
 int GameEngine::generateRandomSymbol()
 {
     int threshold = m_scatterChange * 1000;
+    int wildThreshold = m_wildCardChange * 1000;
     int r = 0;
 #if QT_VERSION_MAJOR < 6
     r = qrand() % 1000;
@@ -95,6 +108,8 @@ int GameEngine::generateRandomSymbol()
 
     if (r < threshold) {
         return 1;
+    } else if (r < threshold + wildThreshold && m_inFreeSpins) {
+        return 0; // Wild (only in free spins)
     } else {
 #if QT_VERSION_MAJOR < 6
         return (qrand() % 4) + 2;
@@ -188,6 +203,17 @@ void GameEngine::shuffle()
                         } while (sym == 1);
                     }
                 }
+                
+                // Apply sticky wilds
+                if (m_inFreeSpins) {
+                    for (const QPoint &p : m_stickyWilds) {
+                        if (p.x() == i && p.y() == j) {
+                            sym = 0; // Force sticky wild
+                            break;
+                        }
+                    }
+                }
+                
                 m_visibleRows[i][j] = sym;
             }
         }
@@ -201,6 +227,13 @@ void GameEngine::shuffle()
         m_shuffleCount = 0;
         
         ensureValidBoard();
+        
+        // Re-apply sticky wilds after ensureValidBoard just in case
+        if (m_inFreeSpins) {
+            for (const QPoint &p : m_stickyWilds) {
+                m_visibleRows[p.x()][p.y()] = 0;
+            }
+        }
         
         emit slotsSpinned();
         checkLines();
@@ -289,201 +322,74 @@ void GameEngine::setFreeSpins(const int spins)
 void GameEngine::checkLines()
 {
     qDebug() << __PRETTY_FUNCTION__;
-    // 1st row
-    /* winning lines
-      11 12 13 14 15 - line 2
-      11 22 13 24 15 - line 8
-      11 12 23 14 15 - line 6
-      */
-    int no = m_visibleRows.at(0).at(0);
-    int factor = 0;
+    
     int winnings = 0;
-    if(m_visibleRows.at(0).at(1) == no) {
-        if(m_visibleRows.at(0).at(2) == no && m_selectedLines > 1) { // x3
-            factor = 2;
-            emit winningSlot(0, 0);
-            emit winningSlot(0, 1);
-            emit winningSlot(0, 2);
-            if(m_visibleRows.at(0).at(3) == no) { // x4
-                factor = 3;
-                emit winningSlot(0, 3);
-                if(m_visibleRows.at(0).at(4) == no) { // x5
-                    emit winningSlot(0, 4);
-                    factor = 4;
+    
+    // Iterate through all 9 lines
+    for (int i = 0; i < 9; i++) {
+        // Check if this line is selected
+        if (i >= m_selectedLines) continue;
+        
+        // Get the first symbol of the line
+        int r0 = m_linePatterns[i][0][0];
+        int c0 = m_linePatterns[i][0][1];
+        int firstSymbol = m_visibleRows.at(r0).at(c0);
+        
+        // Determine the effective symbol for this line
+        // If first is Wild (0), look ahead for non-wild
+        int effectiveSymbol = firstSymbol;
+        if (effectiveSymbol == 0) {
+            for (int j = 1; j < 5; j++) {
+                int r = m_linePatterns[i][j][0];
+                int c = m_linePatterns[i][j][1];
+                int sym = m_visibleRows.at(r).at(c);
+                if (sym != 0) {
+                    effectiveSymbol = sym;
+                    break;
                 }
             }
-            winnings += m_payTable.at(no).at(factor) * no;
-            factor = 0;
+            // If all are wild, treat as highest paying symbol (e.g. 5)
+            if (effectiveSymbol == 0) effectiveSymbol = 5;
         }
-
-        if(m_visibleRows.at(0).at(1) == no && m_selectedLines > 5) { // x3
-            if(m_visibleRows.at(1).at(2) == no) {
-                factor = 2;
-                emit winningSlot(0, 0);
-                emit winningSlot(0, 1);
-                emit winningSlot(1, 2);
-                if(m_visibleRows.at(0).at(3) == no) {
-                    factor = 3;
-                    emit winningSlot(0, 3);
-                    if(m_visibleRows.at(0).at(4) == no) {
-                        factor = 4;
-                        emit winningSlot(0, 4);
-                    }
-                }
+        
+        // Check matches
+        int matchCount = 1; // First symbol always matches itself (or is wild)
+        
+        for (int j = 1; j < 5; j++) {
+            int r = m_linePatterns[i][j][0];
+            int c = m_linePatterns[i][j][1];
+            int sym = m_visibleRows.at(r).at(c);
+            
+            // Match if symbol is same as effective, OR symbol is Wild (0)
+            if (sym == effectiveSymbol || sym == 0) {
+                matchCount++;
+            } else {
+                break;
             }
-            winnings += m_payTable.at(no).at(factor) * no;
-            factor = 0;
         }
-
-        if(m_visibleRows.at(1).at(1) == no && m_selectedLines > 7) {
-            if(m_visibleRows.at(0).at(2) == no) { // x3
-                factor = 2;
-                emit winningSlot(0, 0);
-                emit winningSlot(1, 1);
-                emit winningSlot(0, 2);
-                if(m_visibleRows.at(1).at(3) == no) {
-                    factor = 3;
-                    emit winningSlot(1, 3);
-                    if(m_visibleRows.at(0).at(4) == no) {
-                        factor = 4;
-                        emit winningSlot(0, 4);
-                    }
-                }
+        
+        // Calculate winnings if 3 or more matches
+        if (matchCount >= 3) {
+            int factor = matchCount - 1; // 3 matches -> index 2, 4 -> 3, 5 -> 4
+            
+            // Emit winning slots
+            for (int j = 0; j < matchCount; j++) {
+                emit winningSlot(m_linePatterns[i][j][0], m_linePatterns[i][j][1]);
             }
-            winnings += m_payTable.at(no).at(factor) * no;
-            factor = 0;
-        }
-    }
-
-    // 2nd row
-    /* winning lines
-      21 22 23 24 25 - line 1
-      21 22 13 24 25 - line 4
-      21 22 33 24 25 - line 5
-      */
-    no = m_visibleRows.at(1).at(0);
-    if(m_visibleRows.at(1).at(1) == no) {
-        if(m_visibleRows.at(1).at(2) == no) { // x3
-            factor = 2;
-            emit winningSlot(1, 0);
-            emit winningSlot(1, 1);
-            emit winningSlot(1, 2);
-            if(m_visibleRows.at(1).at(3) == no) { // x4
-                factor = 3;
-                emit winningSlot(1, 3);
-                if(m_visibleRows.at(1).at(4) == no) { // x5
-                    factor = 4;
-                    emit winningSlot(1, 4);
-                }
-            }
-            winnings += m_payTable.at(no).at(factor) * no;
-            factor = 0;
-        }
-
-        if(m_visibleRows.at(1).at(1) == no && m_selectedLines > 3) {
-            if(m_visibleRows.at(2).at(2) == no) {
-                factor = 2;
-                emit winningSlot(1, 0);
-                emit winningSlot(1, 1);
-                emit winningSlot(2, 2);
-                if(m_visibleRows.at(1).at(3) == no) {
-                    factor = 3;
-                    emit winningSlot(1, 3);
-                    if(m_visibleRows.at(1).at(4) == no) {
-                        factor = 4;
-                        emit winningSlot(1, 4);
-                    }
-                }
-            }
-            winnings += m_payTable.at(no).at(factor) * no;
-            factor = 0;
-        }
-
-        if(m_visibleRows.at(1).at(1) == no && m_selectedLines > 4) {
-            if(m_visibleRows.at(0).at(2) == no) { // x3
-                factor = 2;
-                emit winningSlot(1, 0);
-                emit winningSlot(1, 1);
-                emit winningSlot(0, 2);
-                if(m_visibleRows.at(1).at(3) == no) {
-                    factor = 3;
-                    emit winningSlot(1, 3);
-                    if(m_visibleRows.at(1).at(4) == no) {
-                        factor = 4;
-                        emit winningSlot(1, 4);
-                    }
-                }
-            }
-            winnings += m_payTable.at(no).at(factor) * no;
-            factor = 0;
+            
+            // Calculate win amount
+            // Paytable index: symbol (0-9), factor (0-4)
+            // Note: factor 2 is for 3 matches, 3 for 4, 4 for 5.
+            // Paytable stores values for 1-5 matches at indices 0-4.
+            // But populatePayTable logic:
+            // list.append(j == 4 ? (j + 1) * 4 : (j + 1) * 2);
+            // j goes 0..4.
+            // So index 2 is for 3 matches. Correct.
+            
+            int lineWin = m_payTable.at(effectiveSymbol).at(factor) * effectiveSymbol;
+            winnings += lineWin;
         }
     }
-
-
-    // 3rd row
-    /* winning lines
-      31 32 33 34 35 - line 3
-      31 22 33 24 35 - line 9
-      31 32 23 34 35 - line 7
-      */
-    no = m_visibleRows.at(2).at(0);
-    if(m_visibleRows.at(2).at(1) == no && m_selectedLines > 2) {
-        if(m_visibleRows.at(2).at(2) == no) { // x3
-            factor = 2;
-            emit winningSlot(2, 0);
-            emit winningSlot(2, 1);
-            emit winningSlot(2, 2);
-            if(m_visibleRows.at(2).at(3) == no) { // x4
-                factor = 3;
-                emit winningSlot(2, 3);
-                if(m_visibleRows.at(2).at(4) == no) { // x5
-                    factor = 4;
-                    emit winningSlot(2, 4);
-                }
-            }
-            winnings += m_payTable.at(no).at(factor) * no;
-            factor = 0;
-        }
-
-        if(m_visibleRows.at(1).at(1) == no && m_selectedLines > 8) { // x3
-            if(m_visibleRows.at(2).at(2) == no) {
-                factor = 2;
-                emit winningSlot(2, 0);
-                emit winningSlot(1, 1);
-                emit winningSlot(2, 2);
-                if(m_visibleRows.at(1).at(3) == no) {
-                    factor = 3;
-                    emit winningSlot(1, 3);
-                    if(m_visibleRows.at(2).at(4) == no) {
-                        factor = 4;
-                        emit winningSlot(2, 4);
-                    }
-                }
-            }
-            winnings += m_payTable.at(no).at(factor) * no;
-            factor = 0;
-        }
-
-        if(m_visibleRows.at(2).at(1) == no && m_selectedLines > 6) {
-            if(m_visibleRows.at(1).at(2) == no) { // x3
-                factor = 2;
-                emit winningSlot(2, 0);
-                emit winningSlot(2, 1);
-                emit winningSlot(1, 2);
-                if(m_visibleRows.at(2).at(3) == no) {
-                    factor = 3;
-                    emit winningSlot(2, 3);
-                    if(m_visibleRows.at(2).at(4) == no) {
-                        factor = 4;
-                        emit winningSlot(2, 4);
-                    }
-                }
-            }
-            winnings += m_payTable.at(no).at(factor) * no;
-            factor = 0;
-        }
-    }
-
 
     // if so - how much did it win
     qDebug() << QString("Won %1").arg(winnings);
@@ -501,8 +407,35 @@ void GameEngine::checkLines()
 
     // Check for bonuses
     checkBonuses(winnings > 0);
+    
+    // Update sticky wilds if in free spins
+    if (m_inFreeSpins) {
+        updateStickyWilds();
+    } else {
+        m_stickyWilds.clear();
+    }
 
     setPlayable(true);
+}
+
+void GameEngine::updateStickyWilds()
+{
+    for(int r = 0; r < 3; r++) {
+        for(int c = 0; c < 5; c++) {
+            if (m_visibleRows.at(r).at(c) == 0) { // Wild
+                bool alreadySticky = false;
+                for (const QPoint &p : m_stickyWilds) {
+                    if (p.x() == r && p.y() == c) {
+                        alreadySticky = true;
+                        break;
+                    }
+                }
+                if (!alreadySticky) {
+                    m_stickyWilds.append(QPoint(r, c));
+                }
+            }
+        }
+    }
 }
 
 void GameEngine::populatePayTable()

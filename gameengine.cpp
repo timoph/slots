@@ -145,7 +145,22 @@ void GameEngine::shuffle()
         for(int i = 0; i < 3; i++) {
             QList<int> list;
             for(int j = 0; j < 5; j++) {
-                list.append(generateRandomSymbol());
+                int sym = generateRandomSymbol();
+                if (sym == 1) {
+                    bool existingBonus = false;
+                    for(int k = 0; k < i; k++) {
+                        if (m_visibleRows[k][j] == 1) {
+                            existingBonus = true;
+                            break;
+                        }
+                    }
+                    if (existingBonus) {
+                        do {
+                            sym = generateRandomSymbol();
+                        } while (sym == 1);
+                    }
+                }
+                list.append(sym);
             }
             m_visibleRows.append(list);
         }
@@ -157,7 +172,23 @@ void GameEngine::shuffle()
                 else if(j == 1 && m_shuffleCount > 9) continue;
                 else if(j == 2 && m_shuffleCount > 11) continue;
                 else if(j == 3 && m_shuffleCount > 13) continue;
-                m_visibleRows[i][j] = generateRandomSymbol();
+                
+                int sym = generateRandomSymbol();
+                if (sym == 1) {
+                    bool existingBonus = false;
+                    for(int k = 0; k < i; k++) {
+                        if (m_visibleRows[k][j] == 1) {
+                            existingBonus = true;
+                            break;
+                        }
+                    }
+                    if (existingBonus) {
+                        do {
+                            sym = generateRandomSymbol();
+                        } while (sym == 1);
+                    }
+                }
+                m_visibleRows[i][j] = sym;
             }
         }
     }

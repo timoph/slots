@@ -213,9 +213,7 @@ Rectangle {
     // Bonus triggered display
     Item {
         id: bonusDisplay
-        anchors.centerIn: parent
-        width: parent.width
-        height: parent.height
+        anchors.fill: board
         opacity: 0
         z: 101
         
@@ -317,9 +315,7 @@ Rectangle {
     // Free Spins Complete display
     Item {
         id: freeSpinsCompleteDisplay
-        anchors.centerIn: parent
-        width: parent.width
-        height: parent.height
+        anchors.fill: board
         opacity: 0
         z: 101
         
@@ -428,9 +424,7 @@ Rectangle {
     // Flashy win amount display
     Item {
         id: winAmountDisplay
-        anchors.centerIn: parent
-        width: parent.width
-        height: parent.height
+        anchors.fill: board
         opacity: 0
         z: 100
         

@@ -50,7 +50,7 @@ public slots:
 private slots:
     void checkLines();
     void shuffle();
-    void checkBonuses();
+    void checkBonuses(bool wonLastSpin = false);
     void playFreeSpinRound();
 //    void check1line();
 //    void check2line();

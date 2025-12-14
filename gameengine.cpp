@@ -469,7 +469,7 @@ void GameEngine::checkLines()
     }
 
     // Check for bonuses
-    checkBonuses();
+    checkBonuses(winnings > 0);
 
     setPlayable(true);
 }
@@ -523,7 +523,7 @@ void GameEngine::populatePayTable()
 //    qDebug() << tableContents;
 }
 
-void GameEngine::checkBonuses()
+void GameEngine::checkBonuses(bool wonLastSpin)
 {
     // Count how many reels (columns) have at least one bonus symbol
     // Bonus symbol is value 1
@@ -547,7 +547,7 @@ void GameEngine::checkBonuses()
     
     qDebug() << QString("Found bonus in %1 reels").arg(bonusReelsCount);
     
-    if(bonusReelsCount >= 3 && !m_inFreeSpins) {
+    if(bonusReelsCount >= 3) {
         int spinsAwarded = 0;
         if(bonusReelsCount == 3) spinsAwarded = 5;
         else if(bonusReelsCount == 4) spinsAwarded = 10;
@@ -555,28 +555,54 @@ void GameEngine::checkBonuses()
         
         qDebug() << QString("BONUS! Awarded %1 free spins").arg(spinsAwarded);
         
-        m_freeSpins = spinsAwarded;
-        m_freeSpinsTotal = spinsAwarded;
-        m_inFreeSpins = true;
-        m_freeSpinsTotalWon = 0;
-        
-        emit bonusTriggered(spinsAwarded);
-        emit freeSpinsChanged(m_freeSpins);
-        
-        setMessage(QString("BONUS! %1 FREE SPINS!").arg(spinsAwarded));
-        
-        // Start free spins after a short delay
-        QTimer::singleShot(2000, this, SLOT(playFreeSpinRound()));
+        if (!m_inFreeSpins) {
+            m_freeSpins = spinsAwarded;
+            m_freeSpinsTotal = spinsAwarded;
+            m_inFreeSpins = true;
+            m_freeSpinsTotalWon = 0;
+            
+            emit bonusTriggered(spinsAwarded);
+            emit freeSpinsChanged(m_freeSpins);
+            
+            setMessage(QString("BONUS! %1 FREE SPINS!").arg(spinsAwarded));
+            
+            // Start free spins after a short delay
+            QTimer::singleShot(2000, this, SLOT(playFreeSpinRound()));
+        } else {
+            // Re-trigger free spins
+            m_freeSpins += spinsAwarded;
+            m_freeSpinsTotal += spinsAwarded;
+            
+            emit bonusTriggered(spinsAwarded);
+            emit freeSpinsChanged(m_freeSpins);
+            
+            setMessage(QString("BONUS! +%1 FREE SPINS!").arg(spinsAwarded));
+            
+            // Continue free spins after a delay (longer if won)
+            int delay = wonLastSpin ? 3000 : 1500;
+            QTimer::singleShot(delay, this, SLOT(playFreeSpinRound()));
+        }
     }
     else if(m_inFreeSpins && m_freeSpins > 0) {
         // Continue free spins
-        QTimer::singleShot(1500, this, SLOT(playFreeSpinRound()));
+        int delay = wonLastSpin ? 3000 : 1500;
+        QTimer::singleShot(delay, this, SLOT(playFreeSpinRound()));
     }
     else if(m_inFreeSpins && m_freeSpins == 0) {
         // Free spins complete
-        m_inFreeSpins = false;
-        emit freeSpinsComplete(m_freeSpinsTotalWon);
-        setMessage(QString("Free spins complete! Won %1 total!").arg(m_freeSpinsTotalWon));
+        int delay = wonLastSpin ? 3000 : 0;
+        
+        if (delay > 0) {
+             QTimer::singleShot(delay, this, [this](){
+                 m_inFreeSpins = false;
+                 emit freeSpinsComplete(m_freeSpinsTotalWon);
+                 setMessage(QString("Free spins complete! Won %1 total!").arg(m_freeSpinsTotalWon));
+             });
+        } else {
+             m_inFreeSpins = false;
+             emit freeSpinsComplete(m_freeSpinsTotalWon);
+             setMessage(QString("Free spins complete! Won %1 total!").arg(m_freeSpinsTotalWon));
+        }
     }
 }
 

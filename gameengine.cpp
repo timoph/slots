@@ -24,7 +24,7 @@ GameEngine::GameEngine(QObject *parent) :
 {
     m_bet = 1;
     m_selectedLines = 9;
-    m_wildCardChange = 0.1;
+    m_wildCardChange = 0.05;
     m_scatterChange = 0.05;
     m_credits = 100;
     m_message = "";
@@ -93,6 +93,15 @@ void GameEngine::spin()
     setCredits(m_credits - cost);
 
     shuffle();
+}
+
+bool GameEngine::isStickyWild(const int row, const int col) const
+{
+    for (const QPoint &p : m_stickyWilds) {
+        if (p.x() == row && p.y() == col)
+            return true;
+    }
+    return false;
 }
 
 int GameEngine::generateRandomSymbol()

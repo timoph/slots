@@ -22,6 +22,7 @@ public:
     bool isPlayable() const;
     int freeSpins() const;
     Q_INVOKABLE int itemForPlace(const int row, const int  column);
+    Q_INVOKABLE bool isStickyWild(const int row, const int col) const;
     QString message() const;
 
 signals:

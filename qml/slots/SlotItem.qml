@@ -6,6 +6,7 @@ Rectangle {
     property int value: 2
     property color itemcolor: "#dedede"
     property bool isSpinning: false
+    property bool isStickyWild: false
     
     width: 80
     height: 80
@@ -110,7 +111,7 @@ Rectangle {
             width: parent.width
             height: parent.height
             y: 0
-            visible: value === 0 && !isSpinning
+            visible: value === 0 && (!isSpinning || isStickyWild)
             color: "#330000"
             border.color: "#FF0000"
             border.width: 3

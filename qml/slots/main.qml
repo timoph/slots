@@ -184,6 +184,11 @@ Rectangle {
             stopReel3Timer.stop()
             stopReel4Timer.stop()
             
+            // Update sticky wild flags before starting roll
+            r0c0.isStickyWild = engine.isStickyWild(0,0); r0c1.isStickyWild = engine.isStickyWild(0,1); r0c2.isStickyWild = engine.isStickyWild(0,2); r0c3.isStickyWild = engine.isStickyWild(0,3); r0c4.isStickyWild = engine.isStickyWild(0,4)
+            r1c0.isStickyWild = engine.isStickyWild(1,0); r1c1.isStickyWild = engine.isStickyWild(1,1); r1c2.isStickyWild = engine.isStickyWild(1,2); r1c3.isStickyWild = engine.isStickyWild(1,3); r1c4.isStickyWild = engine.isStickyWild(1,4)
+            r2c0.isStickyWild = engine.isStickyWild(2,0); r2c1.isStickyWild = engine.isStickyWild(2,1); r2c2.isStickyWild = engine.isStickyWild(2,2); r2c3.isStickyWild = engine.isStickyWild(2,3); r2c4.isStickyWild = engine.isStickyWild(2,4)
+
             // Start rolling animation on all slots
             r0c0.startRolling(); r0c1.startRolling(); r0c2.startRolling(); r0c3.startRolling(); r0c4.startRolling()
             r1c0.startRolling(); r1c1.startRolling(); r1c2.startRolling(); r1c3.startRolling(); r1c4.startRolling()
@@ -216,6 +221,10 @@ Rectangle {
         function onFreeSpinsComplete(totalWon) {
             console.log("FREE SPINS COMPLETE, won:", totalWon)
             freeSpinsCompleteDisplay.show(totalWon)
+            // Clear sticky wild flags
+            r0c0.isStickyWild = false; r0c1.isStickyWild = false; r0c2.isStickyWild = false; r0c3.isStickyWild = false; r0c4.isStickyWild = false
+            r1c0.isStickyWild = false; r1c1.isStickyWild = false; r1c2.isStickyWild = false; r1c3.isStickyWild = false; r1c4.isStickyWild = false
+            r2c0.isStickyWild = false; r2c1.isStickyWild = false; r2c2.isStickyWild = false; r2c3.isStickyWild = false; r2c4.isStickyWild = false
         }
     }
 
